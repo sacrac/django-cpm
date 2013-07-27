@@ -7,20 +7,18 @@ from django.utils.translation import ugettext_lazy as _
 from core.models import Slugged, base_concrete_model, DateStamp
 
 from projects.models import Project
-from changes.models import ChangeOrder
 
 
 class Task(Slugged):
     project = models.ForeignKey(Project)
+    category = models.ForeignKey('TaskCategory')
     projected_completion_date = models.DateField(_("Projected Completion Date"),
                                                  blank=True, null=True)
     completion_date = models.DateField(_("Actual Completion Date"),
                                        blank=True, null=True)
     description = models.TextField(blank=True)
     expense = models.IntegerField(blank=True)
-    price = models.IntegerField(blank=True)
-    category = models.ForeignKey('TaskCategory')
-    change_order = models.ManyToManyField(ChangeOrder, blank=True)
+    price = models.IntegerField(blank=True, verbose_name=_('Markup'))
 
     class Meta:
         order_with_respect_to = 'project'
@@ -32,28 +30,33 @@ class Task(Slugged):
         return reverse('tasks:task-update', kwargs={'pk': self.pk})
 
     def due_date_until(self):
-        return timeuntil(self.projected_completion_date)
+        if self.projected_completion_date:
+            return timeuntil(self.projected_completion_date)
 
     def due_date_since(self):
-        return timesince(self.projected_completion_date)
+        if self.projected_completion_date:
+            return timesince(self.projected_completion_date)
 
     def get_status(self):
         if self.project.start_time:
             if self.completion_date:
-                result = 'Completed %s' % str(self.completion_date)
+                result = 2
             else:
-                result = 'In progress'
+                result = 1
         else:
-            result = '%s not started' % self.project.title
+            result = 0
         return result
 
     def get_project_category_totals(self):
         result_dict = {}
         all_categories = TaskCategory.objects.all()
         all_tasks = Task.objects.filter(project=self.project)
+        all_categories = all_categories.order_by('order')
+        print all_categories
         for cat in all_categories:
             cat_tasks = all_tasks.filter(category=cat)
             if cat_tasks:
+                print cat.title
                 cat_exp_total = sum(cat_tasks.values_list('expense', flat=True))
                 cat_price_total = sum(cat_tasks.values_list('price', flat=True))
                 result_dict[cat.slug] = {
@@ -100,25 +103,3 @@ class TaskCategory(Slugged):
         for p in project.task_set.filter(category=self):
             total += p.expense
         return total
-
-    def get_project_category_totals(self, project_id):
-        project = Project.objects.get(id=project_id)
-        cat_exp_total = self.get_project_category_expense(project)
-        cat_price_total = self.get_project_category_price(project)
-        task_set = self.task_set.filter(project=project).orderby('order').values()
-        task_set_json = []
-        for task in task_set:
-            task['title_url'] = urlquote(task['title'])
-            task_set_json.append(task)
-        result_dict= {
-            'id': self.id,
-            'slug': self.slug,
-            'title': self.title,
-            'title_url': urlquote(self.title),
-            'order': self.order,
-            'expense': cat_exp_total,
-            'price': cat_price_total,
-            'total': sum([cat_exp_total, cat_price_total]),
-            'task_set': task_set_json,
-            }
-        return result_dict

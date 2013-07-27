@@ -1,9 +1,16 @@
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-
-from core.models import Slugged, base_concrete_model, DateStamp
+from django.utils.translation import ugettext_lazy as _
 from django.utils.http import urlquote
+
+from string import punctuation
+from urllib import unquote
+
+from core.utils import import_dotted_path
+from core.models import Slugged, base_concrete_model, DateStamp
 
 
 class Project(DateStamp, Slugged):
@@ -21,6 +28,15 @@ class Project(DateStamp, Slugged):
     def get_update_url(self):
         return reverse('projects:project-update', kwargs={'pk': self.pk})
 
+    def get_progress(self):
+        task_set = self.task_set.all()
+        task_count = float(task_set.count())
+        com_tasks = task_set.filter(completion_date__isnull=False)
+        result = 0
+        if com_tasks:
+            result = (com_tasks.count() / task_count)
+        return result
+
     def get_category_price(self, category):
         total = 0
         for p in self.task_set.filter(category=category):
@@ -35,6 +51,25 @@ class Project(DateStamp, Slugged):
 
     def get_category_total(self, category):
         return sum(self.get_category_expense(category), self.get_category_price(category))
+
+    def get_project_price(self):
+        total = 0
+        for p in self.task_set.all():
+            total += p.price
+        return total
+
+    def get_project_expense(self):
+        total = 0
+        for p in self.task_set.all():
+            total += p.expense
+        return total
+
+    def get_project_total(self):
+        total = 0
+        for p in self.task_set.all():
+            total += p.price
+            total += p.expense
+        return total
 
     def get_project_category_totals(self):
         result_dict = {}
@@ -54,6 +89,10 @@ class Project(DateStamp, Slugged):
             for task in task_set:
                 task['title_url'] = urlquote(task['title'])
                 task['update_url'] = task_set_objects.get(id=task['id']).get_update_url()
+                if task['completion_date']:
+                    task['completion_date'] = task['completion_date'].toordinal()
+                if task['projected_completion_date']:
+                    task['projected_completion_date'] = task['projected_completion_date'].toordinal()
                 task_set_json[task['id']] = task
             result_dict[cat_dict[cat].id] = {
                 'slug': cat_dict[cat].slug,
@@ -66,3 +105,39 @@ class Project(DateStamp, Slugged):
                 'task_set': task_set_json,
             }
         return result_dict
+
+
+class ProjectImage(models.Model):
+    project = models.ForeignKey(Project, related_name="images")
+    content_type = models.ForeignKey(ContentType)
+    object_id = models.PositiveIntegerField()
+    content_object = generic.GenericForeignKey('content_type', 'object_id')
+    image = models.ImageField(_("Image"), max_length=200, upload_to='galleries')
+    title = models.CharField(_("Title"), max_length=1000,
+                             blank=True)
+
+    class Meta:
+        verbose_name = _("Image")
+        verbose_name_plural = _("Images")
+        order_with_respect_to = 'project'
+
+    def __unicode__(self):
+        return self.description
+
+    def save(self, *args, **kwargs):
+        """
+        If no description is given when created, create one from the
+        file name.
+        """
+        if not self.id and not self.title:
+            name = unquote(self.image.url).split("/")[-1].rsplit(".", 1)[0]
+            name = name.replace("'", "")
+            name = "".join([c if c not in punctuation else " " for c in name])
+            # str.title() doesn't deal with unicode very well.
+            # http://bugs.python.org/issue6412
+            name = "".join([s.upper() if i == 0 or name[i - 1] == " " else s
+                            for i, s in enumerate(name)])
+            self.title = name
+        super(ProjectImage, self).save(*args, **kwargs)
+
+

@@ -56,6 +56,10 @@ class ProjectDetailView(AjaxableResponseMixin, generic.DetailView):
         return super(ProjectDetailView, self).get_context_data(**context)
 
 
+class ProjectListSuperView(generic.ListView):
+    model = Project
+
+
 class ProjectListView(generic.ListView):
     model = Project
 
@@ -63,12 +67,21 @@ class ProjectListView(generic.ListView):
         self.user = get_object_or_404(User, id=self.args[0])
         return Project.objects.filter(user=self.user)
 
+    def get_context_data(self, **kwargs):
+        self.queryset = super(ProjectListView, self).get_queryset()
+        self.user = get_object_or_404(User, id=self.args[0])
+        context = {
+            'client': self.user
+        }
+        context.update(kwargs)
+        return super(ProjectListView, self).get_context_data(**context)
+
+
 
 class ProjectWizardView(AjaxableResponseMixin, generic.CreateView):
     model = Project
     form_class = ProjectForm
     template_name = 'projects/project_form.html'
-    success_url = '/cpm/tasks/manage/%(id)s/'
 
     def get_context_data(self, **kwargs):
         context = {

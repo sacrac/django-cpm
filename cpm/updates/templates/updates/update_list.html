@@ -1,10 +1,37 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block content %}
 <h1>Project Updates</h1>
+
 <ul>
 {% for update in update_list %}
-	<li><a href="{{ update.url }}">{{ update.url }}</a>
+	<li><a href="{{ update.get_absolute_url }}">{{ update.title }}</a>
+    <ul>
+        <li>project: {{ update.project.title }}</li>
+        <li>description: {{ update.description }}</li>
+        <li>task_set
+            <ul>
+                {% for task in update.tasks.all %}
+                <li>{{ task.title }}</li>
+                {% endfor %}
+            </ul>
+        </li>
+        <li>
+            update_image_set:
+            <ul>
+                {% for image in update.images.all %}
+                    <li>
+                    <a href="update-{{ update.id }}_image-{{ image.id }}">{{ image.title }}</a>
+                    </li>
+                    <li>
+                    <img src="{{ image.image.url }}">
+                    </li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
 	</li>
 		
 {% endfor %}

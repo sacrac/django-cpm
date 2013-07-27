@@ -16,6 +16,7 @@ from jsonview.decorators import json_view
 from core.views import AjaxableResponseMixin
 
 from projects.models import Project
+from changes.models import ChangeOrder
 
 from .models import Task, TaskCategory
 from .forms import TaskForm, TaskCategoryForm
@@ -117,9 +118,27 @@ class TaskFormView(generic.CreateView):
     def dispatch(self, *args, **kwargs):
         return super(TaskFormView, self).dispatch(*args, **kwargs)
 
-    def form_valid(self, form):
-        #TODO: Form processing needed
-        form.save()
+    def post(self, request, *args, **kwargs):
+        form_class = self.get_form_class()
+        form = form_class(request.POST)
+        if form.is_valid():
+            if request.POST['changes']:
+                changes = request.POST['changes']
+                print 'CHANGES:  ' + changes
+            else:
+                changes = ''
+            return self.form_valid(form, changes)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form, changes):
+        new_task = form.save(commit=False)
+        new_task.save()
+        if changes:
+            new_task.changes.add(changes)
+            print(new_task.changes.all())
+        else:
+            print 'NO CHANGE ORDER'
         update_url = form.instance.get_update_url()
         form_html = render_crispy_form(self.form_class())
         context = {'success': True, 'update_url': update_url, 'form_html': form_html, 'new': True}

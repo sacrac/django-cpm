@@ -38,48 +38,53 @@
 <div class="navbar">
 <div class="navbar-inner">
 <div class="container">
-{% if user.is_authenticated %}
-<p><a href="{% url 'accounts:profile' user.username %}">{{ user.username }}</a></p>
-<p><a href="{% url 'logout' %}">Logout</a></p>
-{% else %}
-<p><a href="{% url 'login' %}">Login</a></p>
-<p><a href="{% url 'accounts:signup' %}">Signup</a></p>
-{% endif %}
 <ul class="nav">
-    <li class="dropdown"><a href="#" data-toggle="dropdown">ChangeOrders</a>
-        <ul class="dropdown-menu">
-            <li class="dropdown"><a href="{% url 'changes:change-list' %}">List ChangeOrders</a></li>
-            <li><a href='{% url 'changes:change-form' %}'>Create ChangeOrder</a></li>
-        </ul>
-    </li>
-<li class="dropdown"><a href="#" data-toggle="dropdown">Tasks</a>
-<ul class="dropdown-menu">
-<li><a href='{% url 'tasks:task-form' %}'>Create Task</a></li>
-</ul>
-</li>
-{% if user.is_authenticated %}
-<li class="dropdown"><a href="#" data-toggle="dropdown">Projects</a>
-<ul class="dropdown-menu">
-<li><a href="{% url 'projects:project-list' user.id %}">My Projects</a></li>
-    <li><a href="{% url 'projects:project-form' %}">New Projects</a></li>
-</ul>
-</li>
-{% endif %}
-    <li class="dropdown"><a href="#" data-toggle="dropdown">Updates</a>
-        <ul class="dropdown-menu">
-            <li><a href="{% url 'updates:update-list' %}">My Updates</a></li>
-            <li><a href="{% url 'updates:update-form' %}">New Updates</a></li>
-        </ul>
-    </li>
     {% if user.is_authenticated %}
-    <li class="dropdown"><a href="#" data-toggle="dropdown">Messages</a>
-        <ul class="dropdown-menu">
-            <li><a href="{% url 'messages:message-list' user.id %}">My Messages</a></li>
-            <li><a href="{% url 'messages:message-form' %}">New Messages</a></li>
+        <li class="dropdown"><a href="#" data-toggle="dropdown">Projects</a>
+            <ul class="dropdown-menu">
+                <li><a href="{% url 'projects:project-list' user.id %}">My Projects</a> </li>
+                <li class="divider"></li>
+                {% if user.project_set.all %}
+                    {% for project in user.project_set.all %}
+                        <li><a href="{% url 'projects:project-detail' project.id %}">{{ project.title }}</a></li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+        </li>
+        {% if user.is_superuser %}
+            <li class="dropdown"><a href="#" data-toggle="dropdown">Manage</a>
+                <ul class="dropdown-menu">
+                    <li class="dropdown-submenu"><a href="{% url 'projects:project-list-super' %}">Projects</a>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown"><a href="{% url 'projects:project-wizard' %}">New Project</a></li>
+                            <li class="dropdown"><a href="{% url 'projects:project-list-super' %}">List Projects</a>
+                        </ul>
+                    </li>
+                    <li class="dropdown-submenu"><a href="#" data-toggle="dropdown">Updates</a>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown"><a href="{% url 'updates:update-form' %}">New Update</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown-submenu"><a href="{% url 'changes:change-list' %}">Change Orders</a>
+                        <ul class="dropdown-menu">
+                            <li class="dropdown"><a href='{% url 'changes:change-form' %}'>New Change Order</a></li>
+                        </ul>
+                    </li>
+
+                </ul>
+            </li>
+            {% endif %}
+        <li class="dropdown"><a href="#" data-toggle="dropdown">Account</a>
+            <ul class="dropdown-menu">
+                <li><a href="{% url 'accounts:profile' user.username %}">{{ user.username }}</a></li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
         </ul>
-    </li>
-{% endif %}
+    {% else %}
+        <li><a href="{% url 'login' %}">Login</a></li>
+        <li><a href="{% url 'accounts:signup' %}">Signup</a></li>
+    {% endif %}
 </ul>
+
 </div>
 </div>
 </div>
@@ -113,6 +118,11 @@
 
 </div>
 </article>
+<footer>
+<div class="container">
+
+</div>
+</footer>
 
 {% block extra_js %}{% endblock extra_js %}
 </body>

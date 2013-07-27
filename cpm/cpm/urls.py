@@ -1,3 +1,6 @@
+from django.conf import settings
+from django.conf.urls.static import static
+
 try:
     from django.conf.urls import *
 except ImportError:  # django < 1.4
@@ -18,4 +21,4 @@ urlpatterns = patterns('',
                        url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='logout'),
                        url(r'^accounts/', include('accounts.urls', namespace='accounts')),
                        url(r'^admin/', include(admin.site.urls)),
-)
+) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

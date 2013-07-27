@@ -3,7 +3,7 @@ try:
 except ImportError:  # django < 1.4
     from django.conf.urls.defaults import *
 
-from .views import ProjectWizardView, ProjectFormView, ProjectUpdateView, ProjectDeleteView, ProjectDetailView, ProjectDetailJSONView, ProjectListView, ProjectRedirectView, set_task_order
+from .views import ProjectWizardView, ProjectFormView, ProjectUpdateView, ProjectDeleteView, ProjectDetailView, ProjectDetailJSONView, ProjectListView, ProjectRedirectView, set_task_order, ProjectListSuperView
 
 urlpatterns = patterns('projects',
                        url(r'^wizard/$', ProjectWizardView.as_view(), name='project-wizard'),
@@ -15,6 +15,7 @@ urlpatterns = patterns('projects',
                        url(r'^projects/json/(?P<pk>\d+)/$', ProjectDetailJSONView.as_view(), name='project-detail-json'),
                        url(r'^projects/(?P<pk>\d+)/$', ProjectDetailView.as_view(), name='project-detail'),
                        url(r'^projects/set_task_order/(?P<pk>\d+)/$', set_task_order, name='set-task-order'),
+                       url(r'^list/$', ProjectListSuperView.as_view(), name='project-list-super'),
                        url(r'^([\d-]+)/$', ProjectListView.as_view(), name='project-list'),
                        url(r'^$', ProjectRedirectView.as_view(), name='project-redirect'),
 )

@@ -4,64 +4,53 @@
 {% block extra_css %}
 
     <link rel='stylesheet' href="{% static 'css/font-awesome.min.css' %}">
-    <style>
-    .sub-menu {
-        font-size: 40px;
-        text-align: center;
-    }
-    .task-table a {
-        display: inline-table;
-        height: 100%;
-        width: 100%;
-    }
-    .tab-pane>.header>h2 {
-background-color: #f7f7f7;
-border: 1px solid #ddd;
-padding: 5px 20px;
-border-top-right-radius: 5px;
-border-top-left-radius: 5px;
-}
-    </style>
 {% endblock extra_css %}
 
 
 {% block sub_menu %}{{ block.super }}
-    <li class="active"><a href="#updates" data-toggle="tab"><i class="icon-home"></i></a></li>
-    <li><a data-target="#tasks" data-toggle="tab"><i class="icon-tasks"></i></a></li>
-    <li><a data-target="#discussion" data-toggle="tab"><i class="icon-comments"></i></a></li>
-    <li><a data-target="#proposal" data-toggle="tab"><i class="icon-money"></i></a></li>
+    <li class="active"><a href="#updates" data-toggle="tab"><i class="icon-ok-circle"></i></a></li>
+    <li><a href="#tasks" data-toggle="tab"><i class="icon-tasks"></i></a></li>
+    <li><a href="#change-orders" data-toggle="tab"><i class="icon-edit"></i></a></li>
+    <li><a href="#galleries" data-toggle="tab"><i class="icon-picture"></i></a></li>
 {% endblock sub_menu %}
 
 {% block title %}
     <h1>
-    {{ project.title }}
-    <small>
-        <a href="{% url 'tasks:task-manager' project.id %}">Manage Tasks</a>
-    </small>
+        {{ project.title|title }}
+        <small>
+        </small>
     </h1>
 {% endblock title %}
 {% block intro %}
-    <div class="progress progress-striped active">
-        <div class="bar" style="width: 40%;"></div>
+    <div class="progress active">
+        <div class="bar" style="width: {% widthratio project.get_progress 1 100 %}%;"></div>
     </div>
 {% endblock intro %}
 
 
 
 {% block content %}
-    <div class="row">
-        <div class="tab-content">
-            <div id="updates" class="tab-pane active">
-            <div class="header span12">
-               <h2>Updates</h2>
+
+
+    <div class="wpl-widget">
+
+    <div class="tab-content">
+    <div id="updates" class="tab-pane active">
+        <div class="updates">
+
+            <div class="header">
+                <h2>Updates</h2>
             </div>
+
+            <div class="row">
+
                 <div class="tabbable">
                     <div class="span2 tabs-left">
                         <ul class="nav nav-tabs">
                             {% for update in project.update_set.all %}
                                 <li {% if forloop.first %}class="active"{% endif %}>
                                     <a href="#tab-content-{{ update.slug }}"
-                                       data-toggle="tab">{{ update.publish_date|date:"N d" }}</a></li>
+                                       data-toggle="tab">{{ update.created|date:"N d" }}</a></li>
                             {% endfor %}
                         </ul>
                     </div>
@@ -73,11 +62,11 @@ border-top-left-radius: 5px;
                                 <div class="span4">
                                     <h3>
                                         <a href="{% url 'updates:update-detail' update.id %}">
-                                            {{ update.title }}
+                                            {{ update.title|title }}
                                         </a>
                                     </h3>
 
-                                    <p>{{ update.description }}</p>
+                                    <p>{{ update.description }} {% lorem 2 p %}</p>
                                 </div>
 
                                 <div class="span6">
@@ -102,146 +91,259 @@ border-top-left-radius: 5px;
                                         </div>
                                     </div>
 
-                                    <table class="table">
-                                        <thead>
-                                        <tr>
-                                            <th>Tasks Compeleted This Update:</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
+
+                                    {% if update.tasks.all %}
+                                <h3>
+                                    Tasks Completed This Update:
+                                </h3>
+
+                                <dl>
                                         {% for task in update.tasks.all %}
-                                            <tr class="success">
-                                                <td class="{% if forloop.first %} active{% endif %}">
-                                                    {{ task.title }}
-                                                </td>
-                                                <td>
-                                                    {{ task.projected_completion_date }}
-                                                </td>
-                                            </tr>
+                                            <dt class="lead">
+                                                {{ task.title|title }}
+                                            </dt>
+                                            <dd>
+                                                <dl class="dl-horizontal">
+                                                    <dt>
+                                                        Category:
+                                                    </dt>
+                                                    <dd>
+                                                    {{ task.category.title|title }}
+                                                    </dd>
+                                                    <dt>
+                                                        Description:
+                                                    </dt>
+                                                    <dd>
+                                                        {{ task.description }}
+                                                    </dd>
+                                                    <dt>
+                                                        Date:
+                                                    </dt>
+                                                    <dd>
+                                                        {{ task.completion_date|date:"N d" }}
+                                                    </dd>
+                                                </dl>
+                                            </dd>
                                         {% endfor %}
-
-                                        </tbody>
-                                    </table>
+                                </dl>
+                                {% endif %}
 
                                 </div>
                             </div>
                         {% endfor %}
                     </div>
                 </div>
-
             </div>
-            <div id="tasks" class="tab-pane">
-                <div class="header span12">
-                    <h2>
-                        Tasks
-                    </h2>
-                </div>
+        </div>
+    </div>
+
+    <div id="tasks" class="tab-pane">
+
+        <div class="tasks">
+            <div class="well">
+
+            <div class="header">
+                <h2>
+                    Tasks
+                </h2>
+            </div>
+
+
                 {% with project_category_totals=project.task_set.all.0.get_project_category_totals.values %}
-                <div class="span8">
 
-                {% for cat in project_category_totals %}
 
-                    {% if not forloop.first %}
-                        </tbody>
-                        </table>
-                        </div>
-                    {% endif %}
-                    <div class="task-table" id="category-table-{{ cat.id }}">
 
-                    <h2>{{ cat.title }}</h2>
 
-                    <table class="table table-bordered table-hover">
-                    <caption>{{ cat.description }}{% lorem 20 w %}</caption>
-                        <thead>
-                        <tr class="{# cycle 'success' 'error' 'warning' 'info' as row_colour #}">
-                            <th>Task</th>
-                            <th>Expense</th>
-                            <th>Markup</th>
-                            <th>Status</th>
-
-                        </tr>
-                        </thead>
-                        <tbody>
-
-                        {% for task in cat.tasks %}
-                            <tr class="{{ row_colour }}">
-                                <td class="span3{% if forloop.first %} active{% endif %}">
-                                    <a href="#task-content-{{ task.id }}" data-toggle="tab">
-                                        {{ task.title }}
-                                    </a>
-                                </td>
-
-                                <td class="span1">
-                                    $ {{ task.expense }}
-                                </td>
-                                <td class="span1">
-                                    $ {{ task.price }}
-                                </td>
-                                <td class="span3">
-                                    {{ task.get_status }}
-                                </td>
-
-                            </tr>
-                        {% endfor %}
-                        <tr class="total">
-                            <th>Total : </th>
-                            <th>$ {{ cat.expense }}</th>
-                            <th>$ {{ cat.price }}</th>
-                            <th>$ {{ cat.total }}</th>
-                        </tr>
-                    </tbody>
-                    </table>
-                {% endfor %}
-
-                    </div>
-                </div>
-                <div class="span4">
-                    <div class="tab-content">
                         {% for cat in project_category_totals %}
-                        {% for task in cat.tasks %}
-                            <div class="tab-pane{% if forloop.parentloop.first and forloop.first %} active{% endif %}" id="task-content-{{ task.id }}">
-                                <div class="pull-right">
-                                    <div class="btn-group">
-                                        <a class="btn btn-info btn-mini"
-                                           href="{% url 'tasks:task-update' task.id %}?next={% url 'projects:project-detail' project.id %}">update</a>
-                                        <a class="btn btn-danger btn-mini"
-                                           href="{% url 'tasks:task-delete' task.id %}?next={% url 'projects:project-detail' project.id %}">delete</a>
-                                    </div>
-                                </div>
-                                <h4>
-                                    {{ task.title }}
-                                    <small>
-                                        {{ task.get_status }}
-                                    </small>
-                                </h4>
-                                <p>
-                                    {% if task.description %}{{ task.description }}{% else %}{% lorem 1 p %}{% endif %}
-                                {# todo: remove this if statement #}
-                                </p>
 
+                            {% if not forloop.first %}
+                                </tbody>
+                                </table>
+                                </div>
+                            {% endif %}
+                            <div class="task-table" id="category-table-{{ cat.id }}">
+
+                            <h2>{{ cat.title|title }}</h2>
+
+                            <table class="table table-striped">
+                                <caption>{{ cat.description }}{% lorem 20 w %}</caption>
+                                <thead>
+                                <tr class="{# cycle 'success' 'error' 'warning' 'info' as row_colour #}">
+                                    <th>Task</th>
+
+                                    <th>
+                                        {% if user.is_staff %}
+                                        Expense
+                                        {% endif %}
+                                    </th>
+                                    <th>
+                                        {% if user.is_staff %}
+                                        Markup
+                                        {% endif %}
+                                    </th>
+                                    <th>Status</th>
+
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                {% for task in cat.tasks %}
+                                    <tr class="{{ row_colour }}">
+                                        <td class="span5{% if forloop.first %} active{% endif %}">
+                                            <a href="#task-content-{{ task.id }}" data-toggle="tab">
+                                                {{ task.title|title }}
+                                            </a>
+                                        </td>
+
+                                        <td class="span2">
+                                            {% if user.is_staff %}
+                                            $ {{ task.expense }}
+                                            {% endif %}
+                                        </td>
+                                        <td class="span2">
+                                            {% if user.is_staff %}
+                                            $ {{ task.price }}
+                                            {% endif %}
+                                        </td>
+                                        <td class="span3">
+                                            {{ task.due_date_until }}
+                                        </td>
+
+                                    </tr>
+                                {% endfor %}
+                                <tr class="total">
+                                    <th>Total :</th>
+                                    <th>
+                                        {% if user.is_staff %}
+                                        $ {{ cat.expense }}
+                                    {% endif %}
+                                    </th>
+                                    <th>
+                                        {% if user.is_staff %}
+                                        $ {{ cat.price }}
+                                    {% endif %}
+                                    </th>
+                                    <th>$ {{ cat.total }}</th>
+                                </tr>
+                                </tbody>
+                            </table>
+                        {% endfor %}
+
+                        </div>
+                {% endwith %}
+
+
+                <div class="footer">
+                    <table class="table">
+                        <tr>
+
+
+                    <td class="span5">
+                        <h2>Project Total :</h2>
+                    </td>
+                    <td class="span2">
+                        {% if user.is_staff %}
+                        <h3>
+                          $ {{ project.get_project_expense }}
+                        </h3>
+                        {% endif %}
+
+                    </td>
+                    <td class="span2">
+                        {% if user.is_staff %}
+                        <h3>
+                           $ {{ project.get_project_price }}
+                        </h3>
+
+                        {% endif %}
+                    </td>
+                    <td class="span3">
+                        <h2>
+                           $ {{ project.get_project_total }}
+                        </h2>
+
+                    </td>
+                        </tr>
+                    </table>
+                  </div>
+
+    </div>
+
+    </div>
+    </div>
+
+    <div id="change-orders" class="tab-pane">
+        <div class="change-orders">
+            <div class="header">
+                <h2>Change Orders</h2>
+            </div>
+
+            <div class="row">
+
+                <div class="tabbable">
+                    <div class="span2 tabs-left">
+                        <ul class="nav nav-tabs">
+                            {% for changeorder in project.changeorder_set.all %}
+                                <li {% if forloop.first %}class="active"{% endif %}>
+                                    <a href="#tab-content-{{ changeorder.slug }}"
+                                       data-toggle="tab">{{ changeorder.created|date:"N d" }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <div class="tab-content">
+
+                        {% for changeorder in project.changeorder_set.all %}
+                            <div id="tab-content-{{ changeorder.slug }}"
+                                 class="tab-pane{% if forloop.first %} active{% endif %}">
+                                <div class="span4">
+                                    <h3>
+                                        <a href="{% url 'changes:change-detail' changeorder.id %}">
+                                            {{ changeorder.title|title }}
+                                        </a>
+                                    </h3>
+
+                                    <p>{{ changeorder.description }} {% lorem 2 p %}</p>
+                                </div>
+
+                                <div class="span6">
+                                    <h3>
+                                        Tasks Modified:
+                                    </h3>
+
+                                    <ul>
+                                        {% for task in changeorder.tasks.all %}
+                                            <li>
+                                                {{ task.title|title }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+
+                                </div>
                             </div>
                         {% endfor %}
-                        {% endfor %}
                     </div>
                 </div>
 
-                {% endwith %}
-            </div>
-            <div id="discussion" class="tab-pane">
-                <div class="header span12">
-                    <h2>Discussion</h2>
-                </div>
 
-            </div>
-            <div id="proposal" class="tab-pane">
-                <div class="header span12">
-                    <h2>Proposal</h2>
-                </div>
 
             </div>
 
         </div>
+    </div>
+    <div id="galleries" class="tab-pane">
+        <div class="galleries">
+            <div class="header">
+                <h2>Gallery</h2>
+            </div>
 
+                <div id="task-list"></div>
+
+
+        </div>
+
+    </div>
+
+    </div>
 
     </div>
 
@@ -267,148 +369,49 @@ border-top-left-radius: 5px;
 
     <script type="text/javascript">
 
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie != '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = jQuery.trim(cookies[i]);
-                    // Does this cookie string begin with the name we want?
-                    if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-        var dataString = ''
-        var csrftoken = getCookie('csrftoken');
-        $(function () {
-            $('input.text-input').css({backgroundColor: "#000"});
-            $('input.text-input').focus(function () {
-                $(this).css({backgroundColor: "#FFDDAA"});
-            });
-            $('input.text-input').blur(function () {
-                $(this).css({backgroundColor: "#FFFFFF"});
-            });
+    function getProjectSummary(project_id) {
 
-            $(":input").change(function () {
-                // validate and process form
-                // first hide any error messages
+            var JSON_url = '/cpm/projects/json/' + project_id + '/';
+            var project_data = {};
+            var task_data = [];
+            var list_data = [];
+            //var task_list = [];
+            $.getJSON(JSON_url, function (data) {
+                var i = 0;
+                $.each(data['category_totals'], function (key, value) {
+                    var task_list = [];
+                    var list1_data = [];
+                    $.each(value['task_set'], function (key_1, value_1) {
+                        task_list.push(value_1);
 
-                var title = $("input#id_title").val();
-                if (title == "") {
-                    $("#div_id_title").addClass('error');
-                    $("input#id_title").after('<span class="help-inline">Title required</span>');
-                    $("input#id_title").focus();
-                    return false;
-                } else {
-                    $('.help-inline').remove();
-                    $("#div_id_title").removeClass('error');
-                }
-
-                var slug = $("input#id_slug").val();
-
-                var project = $("select#id_project").val();
-                if (project == "") {
-                    $("#div_id_project").addClass('error');
-                    $("select#id_project").after('<span class="help-inline">Select project</span>');
-                    $("select#id_project").focus();
-                    return false;
-                } else {
-                    $('.help-inline').remove();
-                    $("#div_id_project").removeClass('error');
-                }
-
-                var status = $("select#id_status").val();
-                if (status == "") {
-                    $("#div_id_status").addClass('error');
-                    $("#div_id_status").after('<span class="help-inline">Select status</span>');
-                    $("input#id_status").focus();
-                    return false;
-                } else {
-                    $('.help-inline').remove();
-                    $("#div_id_status").removeClass('error');
-                }
-
-                var projected_completion_date_month = $("select#id_projected_completion_date_month").val();
-                if (projected_completion_date_month == "0") {
-                    $("#div_id_projected_completion_date").append('<span class="help-inline">Select month</span>');
-                    $("select#id_projected_completion_date_month").focus();
-                    return false;
-                } else {
-                    $('.help-inline').remove();
-                }
-
-                var projected_completion_date_day = $("select#id_projected_completion_date_day").val();
-                if (projected_completion_date_day == "0") {
-                    $("#div_id_projected_completion_date").append('<span class="help-inline">Select day</span>');
-                    $("select#id_projected_completion_date_day").focus();
-                    return false;
-                } else {
-                    $('.help-inline').remove();
-                }
-
-                var projected_completion_date_year = $("select#id_projected_completion_date_year").val();
-                if (projected_completion_date_year == "0") {
-                    $("#div_id_projected_completion_date").append('<span class="help-inline">Select year</span>');
-                    $("select#id_projected_completion_date_year").focus();
-                    return false;
-                } else {
-                    $('.help-inline').remove();
-                }
-
-                var projected_completion_date = projected_completion_date_year + '-' + projected_completion_date_month + '-' + projected_completion_date_day;
-
-                var description = $("textarea#id_description").val();
-                if (description == "") {
-                    $("div_id_description").addClass('error');
-                    $("textarea#id_description").after('<span class="help-inline">Required</span>');
-                    $("textarea#id_description").focus();
-                    return false;
-                } else {
-                    $('.help-inline').remove();
-                    $("div_id_description").removeClass('error');
-                }
-
-                var dataString =
-                        'title=' + title
-                                + '&slug=' + slug
-                                + '&project=' + '1'
-                                + '&status=' + status
-                                + '&projected_completion_date=' + projected_completion_date
-                                + '&description=' + description
-                                + '&csrfmiddlewaretoken=' + getCookie('csrftoken');
-                //alert (dataString);return false;
-                console.log("log" + dataString);
-
-                $.ajax({
-                    type: "POST",
-                    url: "{# url 'timelines:task-create' task.id #}",
-                    data: dataString,
-                    success: function () {
-                        $('.span5').append("<div id='message'></div>")
-                                .hide()
-                                .fadeIn(1500);
-                        $.getJSON("{# url 'timelines:task-ajax-detail' task.id #}", function (result) {
-                            $("#message").append('<h3>Form Submitted</h3>');
-                            $("#message").append('<ul id="result" class="unstyled"></ul>');
-                            $("#message").wrap('<div class="alert alert-success fade in" id="alert"></div>');
-                            $("#alert").prepend('<a class="close" data-dismiss="alert" href="#">&times;</a>');
-                            $.each(result, function (i, field) {
-                                $("#result").append("<li>" + i + " : " + field + "</li>");
-                            });
-                            $('h2').html('<h2>' + result.title + '</h2>')
+                    });
+                    task_list = task_list.sort(function (a, b) {
+                        if (a._order > b._order) return 1;
+                        if (a._order < b._order) return -1;
+                        return 0;
+                    });
+                    $.each(task_list, function (key_1, value_1) {
+                        var list2_data = [];
+                        $.each(value_1, function (key_2, value_2) {
+                            list2_data.push('<li>' + key_2 + ' : ' + value_2 + '</li>');
                         });
-                    }
+                        var list_item = '<li id="task_' + 'id=' + value_1['id'] + '">' + value_1['title'] + '</a>' + '<ul>' + list2_data.join('') + '</ul>' + '</li>';
+
+                        list1_data.push(list_item);
+                    });
+
+                    list_data.push('<dt>' + value['title'] + '</dt><dt><ul><li>exp:  $' +  value['expense'] + '</li><li>markup:  $' + value['price'] + '</li><li>total:  $' + value['total']
+                            + '</li><li>Tasks <ul>' + list1_data.join('') + '</ul></li></dt>'
+                    );
+                    i++;
                 });
-                return false;
+                $('#task-list').html('<dl class="dl-horizontal">' + list_data.join('') + '</dl>');
+
             });
-        });
-        runOnLoad(function () {
-            $("input#id_title").select().focus();
-        });
+
+        }
+
+
     </script>
 
 {% endblock extra_js %}

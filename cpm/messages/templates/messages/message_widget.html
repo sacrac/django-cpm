@@ -89,11 +89,11 @@
                 $("div_id_message").removeClass('error');
             }
 
-            var recipient = $("input#id_recipient").val();
+            var recipient = $("#id_recipient").val();
             if (recipient == "") {
                 $("div_id_recipient").addClass('error');
-                $("input#id_recipient").after('<span class="help-inline">Required</span>');
-                $("input#id_recipient").focus();
+                $("#id_recipient").after('<span class="help-inline">Required</span>');
+                $("#id_recipient").focus();
                 return false;
             }  else {
                 $('.help-inline').remove();

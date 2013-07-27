@@ -1,3 +1,5 @@
+from string import punctuation
+from urllib import unquote
 from django.db import models
 from django.core.urlresolvers import reverse
 from django.utils.timezone import now
@@ -9,10 +11,10 @@ from projects.models import Project
 from tasks.models import Task
 
 
-class Update(Slugged):
+class Update(DateStamp, Slugged):
     project = models.ForeignKey(Project)
     description = models.TextField(blank=True)
-    publish_date = models.DateField(auto_now_add=True)
+    tasks = models.ManyToManyField(Task, blank=True)
 
     def get_absolute_url(self):
         return reverse('updates:update-detail', kwargs={'pk': self.pk})
@@ -24,18 +26,15 @@ class Update(Slugged):
         if self.tasks:
             for task in self.tasks.all():
                 task.completion_date = now().date()
-                super(Task, task).save()
+                task.save()
 
 
+class UpdateImage(Slugged):
+    update = models.ForeignKey(Update, related_name="images")
+    image = models.ImageField(max_length=200, upload_to='updates')
 
-'''
-    def save(self, *args, **kwargs):
-        if self.publish_date is None:
-            self.publish_date = now()
-        super(Update, self).save(*args, **kwargs)
+    class Meta:
+        verbose_name = _("Update Image")
+        verbose_name_plural = _("Update Images")
+        order_with_respect_to = 'update'
 
-    publish_date = models.DateTimeField(_("Publish Date"),
-                                        help_text=_("The date of this project update, will default to now"),
-                                        blank=True, null=True)
-
-'''

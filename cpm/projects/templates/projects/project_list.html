@@ -5,15 +5,19 @@
 
 
 {% block content %}
-    <div class="row">
+    {% if user == client or user.is_superuser %}
+
+
+
+        <div class="row">
         <div class="span4">
             <h4><span>Welcome Back, {{ user.username }}</span></h4>
             <ul class="thumbnails user-profile">
                 <li class="span1">
                     <div class="animated bounceInLeft">
                         <div class="pad15"></div>
-                        <img class="img-rounded" src="holder.js/60x80/social">
-                        <small><a href="#" class="edit">EDIT PROFILE</a></small>
+                        <img class="img-rounded" src="holder.js/60x60/social">
+                        <small><a href="#" class="edit">Edit Profile</a></small>
                     </div>
                 </li>
                 <li class="span3">
@@ -39,9 +43,6 @@
                 </li>
             </ul>
             <div class="clearfix">
-                <p>
-                    {% lorem 1 p %}
-                </p>
 
             </div>
         </div>
@@ -65,38 +66,66 @@
 
                 <form action="{% url 'messages:message-form' %}" method="post" class="animated fadeInUp"
                       id="message-form">
-                    <input class="input-block-level" id="id_message" name="message" placeholder="New message..">
-                    <input id="id_recipient" name="recipient">
-                    <input type="submit" value="Send" id="submit">
+                    <input class="span6" id="id_message" name="message" placeholder="New message..">
+                    <input type="submit" value="Send" id="submit" class="btn btn-primary span2">
+                    <button class="btn-info btn" id="refresh-messages" onclick="getMessages()">
+                        <i class="icon icon-refresh"></i>
+                    </button>
+                    {% if user.is_superuser %}
+                        <input id="id_recipient" name="recipient" value="1" type="hidden">
+                    {% else %}
+                        <input id="id_recipient" name="recipient" value="1" type="hidden">
+                    {% endif %}
                 </form>
-                <button id="refresh-messages" onclick="getMessages()">Refresh</button>
             </div>
 
         </div>
     </div>
+    {% endif %}
 
 
     <div class="wpl-widget projects">
         <div class="well pad-0">
             <div class="header">
-                <i class="pull-left icon-briefcase colour"></i>
+                <i class="pull-left icon-home colour"></i>
                 <h2>Projects</h2>
             </div>
+
+
+
+            {% if user == client or user.is_superuser %}
+
+
+
+
             <table class="table">
                 <thead></thead>
                 <tbody>
                 {% for project in project_list %}
                     <tr>
-                        <td class="span3"><a
+                        <td class="span5"><a class="label label-important"
                                 href="{% url 'projects:project-detail' project.id %}">{{ project.title }}</a></td>
-                        <td class="progress progress-striped span7">
-                            <div class="bar" style="width: 40%;"></div>
+                        <td class="progress span6">
+                            <div class="bar" style="width: {% widthratio project.get_progress 1 100 %}%;"></div>
                         </td>
-                        <td class="span2"><a href="{% url 'updates:update-user-form' project.id %}">Update</a></td>
+                        <td class="span1">
+                            {% if user.is_superuser %}
+                                <a class="btn btn-mini btn-info"
+                                   href="{% url 'updates:update-user-form' project.user_id  %}">Update</a>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
+
+
+
+        {% endif %}
+
+
+
+
         </div>
     </div>
 
@@ -107,40 +136,71 @@
                 <div class="well pad-0">
                     <div class="header">
                         <div class="animated bounceInLeft">
-                            <i class="pull-left icon-info-sign colour"></i>
+                            <i class="pull-left icon-ok-circle colour"></i>
 
                             <h2 class=""><span>Updates</span></h2>
                         </div>
                     </div>
+
+
+
+
+                    {% if user == client or user.is_superuser %}
+
+
+
+                    <!-- Carousel nav -->
+                <div class="carousel-nav">
+                    <div id="updates-next" class="widget-scroll-next3"><i class="icon-chevron-right white but_marg"></i></div>
+                    <div id="updates-prev" class="widget-scroll-prev3"><i class="icon-chevron-left white"></i></div>
+                </div>
                     <div class="caroufredsel_wrapper">
                         <div id="updates-carousel">
                             <!-- Carousel items -->
                             {% for project in project_list %}
                                 {% for update in project.update_set.all %}
                                     <div class="slider-item">
-                                        <h3><i class="icon-calendar"></i>  {{ update.publish_date }}</h3>
+                                        <h3><i class="icon-calendar"></i>  {{ update.created }}</h3>
 
                                         <h4>
-                                            <small>updated</small>
-                                            <em class="colour">{{ project.title }}</em></h4>
+                                            <a href="{% url 'projects:project-detail' project.id %}">
+                                            {{ update.title }}
+                                            </a>
+                                        </h4>
+                                        <h5>
+                                            <small>update on:   </small>
+                                                <em class="colour">{{ project.title }}</em>
+                                        </h5>
 
                                         <div class="clearfix">
-
-                                            <p>{% if update.description %}{{ update.description }}{% else %}{% lorem 1 p %}{% endif %}</p>
-                                        {# todo: remove this if statement after testing #}
-
-
+                                                <p>
+                                                    {% lorem 1 p %}
+                                                    {{ update.description }}
+                                                </p>
                                         </div>
+                                        {% if update.tasks.all %}
+                                            <h5>Tasks completed this update: </h5>
+                                    <ul class="nav nav-list">
+                                        {% for task in update.tasks.all %}
+                                            <li>
+                                                {{ task.title }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    {% endif %}
                                     </div>
                                 {% endfor %}
                             {% endfor %}
                         </div>
 
                     </div>
-                    <!-- Carousel nav -->
-                    <div id="updates-prev" class="widget-scroll-prev3"><i class="icon-chevron-left white"></i></div>
-                    <div id="updates-next" class="widget-scroll-next3"><i class="icon-chevron-right white but_marg"></i>
-                    </div>
+
+
+
+                {% endif %}
+
+
+
                 </div>
             </div>
         </div>
@@ -156,6 +216,19 @@
                             <h2 class=""><span>Change Orders</span></h2>
                         </div>
                     </div>
+
+
+
+                    {% if user == client or user.is_superuser %}
+
+
+
+                    <!-- Carousel nav -->
+                    <div class="carousel-nav">
+                        <div id="change-orders-next" class="widget-scroll-next3"><i class="icon-chevron-right white but_marg"></i> </div>
+                        <div id="change-orders-prev" class="widget-scroll-prev3"><i class="icon-chevron-left white"></i></div>
+                    </div>
+
                     <div class="caroufredsel_wrapper">
                         <div id="change-orders-carousel">
                             <!-- Carousel items -->
@@ -163,27 +236,47 @@
                                 {% for co in project.changeorder_set.all %}
                                     <div class="slider-item">
                                         <h3><i class="icon-calendar"></i>  {{ co.created }}</h3>
+                                    <h4>
+                                        <a href="{% url 'projects:project-detail' project.id %}">
+                                            {{ co.title }}
+                                        </a>
+                                    </h4>
 
-                                        <h4>
-                                            <small>updated</small>
-                                            <em class="colour">{{ project.title }}</em></h4>
+                                        <h5>
+                                            <small>project scope change on:  </small>
+                                            <em class="colour">{{ project.title }}</em>
+                                        </h5>
 
                                         <div class="clearfix">
 
-                                            <p>{{ co.description }}{% lorem 1 p %}</p>
+                                            <p>
+                                                {% lorem 1 p %}
+                                                {{ co.description }}
+                                            </p>
 
 
                                         </div>
+                                        {% if co.tasks.all %}
+                                            <h5>Tasks that were modified: </h5>
+                                            <ul class="nav nav-list">
+                                                {% for task in co.tasks.all %}
+                                                    <li>
+                                                        {{ task.title }}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
                                     </div>
                                 {% endfor %}
                             {% endfor %}
                         </div>
 
                     </div>
-                    <!-- Carousel nav -->
-                    <div id="change-orders-prev" class="widget-scroll-prev3"><i class="icon-chevron-left white"></i></div>
-                    <div id="change-orders-next" class="widget-scroll-next3"><i class="icon-chevron-right white but_marg"></i>
-                    </div>
+
+
+                {% endif %}
+
+
                 </div>
             </div>
         </div>
@@ -232,41 +325,41 @@
 {% block extra_css %}
     <link rel='stylesheet' href="{% static 'css/font-awesome.min.css' %}">
     <style>
-        .user-profile .edit {
-            font-size: 10px;
+
+        .wpl-widget .well {
+            position: relative;
+        }
+        .wpl-widget .carousel-nav {
+            position: absolute;
+            top:0;
+            right:0;
+            display: inline-block;
+            padding: 14px 5px;
+        }
+        #updates-prev, #change-orders-prev {
+        }
+        #updates-next, #change-orders-next {
+        }
+        #updates-prev, #change-orders-prev,  #updates-next, #change-orders-next {
+            cursor: pointer;
             text-align: center;
+            width: 25px;
+            height: 25px;
+            margin: 3px;
+            line-height: 25px;
+            background: #e6e6e6;
+            -webkit-border-radius: 50px;
+            -moz-border-radius: 50px;
+            border-radius: 50px;
+            -moz-transition: all 0.3s ease;
+            -webkit-transition: all 0.3s ease;
+            -o-transition: all 0.3s ease;
+            transition: all 0.3s ease;
+            outline: none;
         }
-        .wpl-widget {} .wpl-widget h3 {}
-        .pad-0 {padding: 0;}
-        .margin-0 {margin: 0;}
-        .header i {
-            padding: 15px;;
-            font-size: 60px;
+        .widget-scroll-prev3 i, .widget-scroll-next3 i {
+            line-height: 25px;
         }
-        .header h2 {
-            line-height: 90px;
-            color: #fff;
-            margin: 0;
-        }
-        .media .media-body {
-            padding: 10px;
-            background-color: #f7f7f7;
-            border-radius: 5px;
-        }
-        .wpl-widget .form-actions {margin-top: 0;}
-        .wpl-widget.messages ul {
-            margin-bottom: 0;
-            margin-left: -1px;
-            display: block;
-            padding: 20px;
-            max-height: 201px;
-            overflow-y: scroll;
-        }
-        .wpl-widget .slider-item {padding: 5px 20px;}
-        .header .colour {color: #f7f7f7;}
-        .header .colour:hover {color: #19C1C3;}
-        #updates-prev, #change-orders-prev {position: relative !important;}
-        #updates-next, #change-orders-next {position: relative !important;}
         .images-horizontal div, .images-horizontal img {
             float: left;
             display: inline-block;
@@ -280,19 +373,5 @@
             height: auto !important;
         }
         .images-horizontal div:first-child {margin-left: 0;}
-        .wpl-widget.change-orders .slider-item {min-height: 400px;}
-        .well .header {
-            width: 100%;
-            border-top-right-radius: 4px;
-            border-top-left-radius: 4px;
-        }
-        .header {
-            padding: 0 0;
-            background: #323A45;
-            margin: 0 auto;
-            height: 86px;
-            width: 100%;
-            z-index: 1000;
-        }
     </style>
 {% endblock extra_css %}

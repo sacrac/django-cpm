@@ -4,38 +4,6 @@
  * Time: 2:15 PM
  * To change this template use File | Settings | File Templates.
  */
-
-$(function () {
-    if (project_url_id) {
-        project_form_url = '/cpm/update/' + project_url_id + '/';
-        project_id = project_form_url.split('/').slice(-2)[0];
-        getProjectSummary(project_id);
-        $('#step-nav a[href="#new-category"]').parent().removeClass('disabled');
-        $('#step-nav a[href="#new-task"]').parent().removeClass('disabled');
-    }
-    $.getJSON('/cpm/tasks/category/', function (data) {
-        var list_data = [];
-        project_summary_json = data;
-        var project_summary_list = [];
-        $.each(data, function (key, value) {
-            project_summary_list.push(value);
-        });
-        project_summary_list = project_summary_list.sort(function (a, b) {
-            if (a.order > b.order) return 1;
-            if (a.order < b.order) return -1;
-            return 0;
-        });
-        $.each(project_summary_list, function (key, value) {
-            var list_item = '<li id="cat_' + 'id=' + value['id'] + '"><a href="' + value['update_url'] + '">' + value['title'] + '</a></li>';
-            list_data.push(list_item);
-        });
-        $('#task-category-list').html(list_data.join(''));
-
-        // Have to replace the OG form, therwise 2 csrf tokens are sent
-        getProjectForm(project_form_url);
-        getTaskCategoryForm(category_form_url);
-    });
-});
 var project_id;
 var project_summary_json = {};
 var task_form_url;
@@ -43,6 +11,33 @@ var category_form_url;
 var project_form_url;
 
 var project_url_id = GetURLParameter('project');
+var change_order_url_id = GetURLParameter('change_order');
+
+$(function () {
+    if (project_url_id) {
+
+        project_id = project_url_id;
+        $('#step-nav a[href="#new-task"]').parent().removeClass('disabled');
+        project_form_url = '/cpm/update/' + project_url_id + '/';
+        getTaskForm(task_form_url);
+        // TODO: WTF is this? Leaving it incase
+        // project_id = project_form_url.split('/').slice(-2)[0];
+
+        if (change_order_url_id) {
+            getProjectCOSummary(change_order_url_id);
+            showStep(2);
+            $('#step-nav a[href="#new-project"]').parent().addClass('disabled');
+            $('.page-header h1').replaceWith('<h1>Change Order</h1>');
+        }
+        else {
+            getProjectSummary(project_id);
+            $('#step-nav a[href="#new-category"]').parent().removeClass('disabled');
+            // Have to replace the OG form, therwise 2 csrf tokens are sent
+            getProjectForm(project_form_url);
+            getTaskCategoryForm(category_form_url);
+        }
+    }
+});
 
 // Temp hack for updating projects looks in url for ?project=pk
 function GetURLParameter(sParam) {
@@ -159,6 +154,10 @@ $('#task-category-list').on("sortstop", function (event, ui) {
 var list1;
 var data_list = [];
 function getProjectSummary(project_id) {
+    if (change_order_url_id) {
+        getProjectCOSummary(change_order_url_id);
+
+    } else {
     var JSON_url = '/cpm/projects/json/' + project_id + '/';
     var project_data = {};
     var task_data = [];
@@ -227,8 +226,32 @@ function getProjectSummary(project_id) {
         })
     });
 
+    }
 
 }
+
+function getProjectCOSummary(co_id) {
+    var JSON_url = '/cpm/changes/tasks/json/' + co_id + '/';
+    var task_data = [];
+    //var task_list = [];
+    $.getJSON(JSON_url, function (data) {
+        var list_data = [];
+        $.each(data, function (key, value) {
+            console.log(key, value);
+            var list_item = '<li id="task_' + 'id=' + value['id'] + '"><a href="' + value['update_url'] + '">'
+                + value['title'] + '</a>'
+                + '</li>';
+
+            list_data.push(list_item);
+            console.log(list_item);
+        });
+        task_data.push(list_data.join(''));
+        console.log(task_data);
+        $('#task-list').html(task_data.join(''));
+    });
+}
+
+
 
 $('#form-wizard').on('submit', '#project-form', function (event) {
     event.preventDefault();
@@ -319,23 +342,28 @@ $('#form-wizard').on('submit', '#task-form', function (event) {
     var task_form_category = $task_form.find('#id_category').val();
     var task_form_project = $task_form.find('#id_project');
     var task_url;
+    var task_form_changes = '&changes='
     var cookie = 'csrfmiddlewaretoken=' + getCookie('csrftoken') + '&';
 
     if (task_form_project.val() == "") {
         task_form_project.val(project_id);
+
     }
 
     if (!$(this).attr('action')) {
         task_url = task_form_url;
+        if (change_order_url_id) {
+            task_form_changes += change_order_url_id;
+        }
     } else {
         task_url = $(this).attr('action');
     }
 
-    console.log(cookie + $(this).serialize());
+    console.log(cookie + $(this).serialize() + task_form_changes);
     $.ajax({
         url: task_url,
         type: "POST",
-        data: cookie + $(this).serialize() + '&change_order=1',
+        data: cookie + $(this).serialize() + task_form_changes,
         success: function (data) {
             if (!(data['success'])) {
                 $task_form.replaceWith(data['form_html']);
@@ -346,7 +374,12 @@ $('#form-wizard').on('submit', '#task-form', function (event) {
                 if ((data['new'])) {
                     $('#ul-category-' + task_form_category).prepend('<li><a href="' + data['update_url'] + '">' + task_form_title + '</a></li>');
                 }
-                getProjectSummary(project_id);
+                if (!(change_order_url_id)) {
+                    getProjectSummary(project_id);
+                }
+                else {
+                    getProjectCOSummary(change_order_url_id);
+                }
             }
         },
         error: function () {
@@ -361,7 +394,7 @@ function editWizardItem(list_id) {
     $(list_id).on('click', 'a', function (event) {
         event.preventDefault();
         var $this = $(this);
-        $(list_id + 'li').removeClass('active');
+        $(list_id + ' *').removeClass('active');
 
         if ($this.is('[href*="category"]')) {
             showStep(3);
@@ -376,7 +409,7 @@ function editWizardItem(list_id) {
     });
 
 }
-editWizardItem( '#task-category-list');
+editWizardItem('#task-category-list');
 editWizardItem('#task-list');
 editWizardItem('#project-summary');
 
@@ -419,7 +452,9 @@ function showStep(step) {
 }
 $('#step-nav a[href="#new-project"]').click(function (e) {
     e.preventDefault();
-    $(this).tab('show');
+    if (!($(this).parent().is('.disabled'))) {
+        $(this).tab('show');
+    }
 });
 $('#step-nav a[href="#new-category"]').click(function (e) {
     e.preventDefault();
