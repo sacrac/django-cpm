@@ -47,7 +47,7 @@
                 <div class="tabbable">
                     <div class="span2 tabs-left">
                         <ul class="nav nav-tabs">
-                            {% for update in project.update_set.all %}
+                            {% for update in project.update_set.all|dictsortreversed:"created" %}
                                 <li {% if forloop.first %}class="active"{% endif %}>
                                     <a href="#tab-content-{{ update.slug }}"
                                        data-toggle="tab">{{ update.created|date:"N d" }}</a></li>
@@ -147,91 +147,7 @@
                     Tasks
                 </h2>
             </div>
-
-
-                {% with project_category_totals=project.task_set.all.0.get_project_category_totals.values %}
-
-
-
-
-                        {% for cat in project_category_totals %}
-
-                            {% if not forloop.first %}
-                                </tbody>
-                                </table>
-                                </div>
-                            {% endif %}
-                            <div class="task-table" id="category-table-{{ cat.id }}">
-
-                            <h2>{{ cat.title|title }}</h2>
-
-                            <table class="table table-striped">
-                                <caption>{{ cat.description }}{% lorem 20 w %}</caption>
-                                <thead>
-                                <tr class="{# cycle 'success' 'error' 'warning' 'info' as row_colour #}">
-                                    <th>Task</th>
-
-                                    <th>
-                                        {% if user.is_staff %}
-                                        Expense
-                                        {% endif %}
-                                    </th>
-                                    <th>
-                                        {% if user.is_staff %}
-                                        Markup
-                                        {% endif %}
-                                    </th>
-                                    <th>Status</th>
-
-                                </tr>
-                                </thead>
-                                <tbody>
-
-                                {% for task in cat.tasks %}
-                                    <tr class="{{ row_colour }}">
-                                        <td class="span5{% if forloop.first %} active{% endif %}">
-                                            <a href="#task-content-{{ task.id }}" data-toggle="tab">
-                                                {{ task.title|title }}
-                                            </a>
-                                        </td>
-
-                                        <td class="span2">
-                                            {% if user.is_staff %}
-                                            $ {{ task.expense }}
-                                            {% endif %}
-                                        </td>
-                                        <td class="span2">
-                                            {% if user.is_staff %}
-                                            $ {{ task.price }}
-                                            {% endif %}
-                                        </td>
-                                        <td class="span3">
-                                            {{ task.due_date_until }}
-                                        </td>
-
-                                    </tr>
-                                {% endfor %}
-                                <tr class="total">
-                                    <th>Total :</th>
-                                    <th>
-                                        {% if user.is_staff %}
-                                        $ {{ cat.expense }}
-                                    {% endif %}
-                                    </th>
-                                    <th>
-                                        {% if user.is_staff %}
-                                        $ {{ cat.price }}
-                                    {% endif %}
-                                    </th>
-                                    <th>$ {{ cat.total }}</th>
-                                </tr>
-                                </tbody>
-                            </table>
-                        {% endfor %}
-
-                        </div>
-                {% endwith %}
-
+                <div id="task-list"></div>
 
                 <div class="footer">
                     <table class="table">
@@ -283,7 +199,7 @@
                 <div class="tabbable">
                     <div class="span2 tabs-left">
                         <ul class="nav nav-tabs">
-                            {% for changeorder in project.changeorder_set.all %}
+                            {% for changeorder in project.changeorder_set.all|dictsortreversed:"created" %}
                                 <li {% if forloop.first %}class="active"{% endif %}>
                                     <a href="#tab-content-{{ changeorder.slug }}"
                                        data-toggle="tab">{{ changeorder.created|date:"N d" }}</a></li>
@@ -336,7 +252,6 @@
                 <h2>Gallery</h2>
             </div>
 
-                <div id="task-list"></div>
 
 
         </div>
@@ -369,19 +284,43 @@
 
     <script type="text/javascript">
 
+    $(document).ready( function() {
+        getProjectSummary({{ project.id }});
+    });
+
     function getProjectSummary(project_id) {
 
             var JSON_url = '/cpm/projects/json/' + project_id + '/';
-            var project_data = {};
-            var task_data = [];
             var list_data = [];
-            //var task_list = [];
+            var table_head = '<thead><tr><th class="span5">Task</th>'
+                + '<th class="span2">Expense</th><th class="span2">Markup</th>'
+                + '<th class="span3">Status</th></tr></thead>'
+                    ;
+
             $.getJSON(JSON_url, function (data) {
                 var i = 0;
+                var cat_list = [];
+                var cat_list_sorted = [];
+                var cat_data = {};
+
                 $.each(data['category_totals'], function (key, value) {
+                    cat_list.push(value);
+                });
+                cat_list_sorted = cat_list.sort(function (a, b) {
+                    if (a.order > b.order) return 1;
+                    if (a.order < b.order) return -1;
+                    return 0;
+                });
+                $.each(cat_list_sorted, function (key_1, value_1) {
+                    cat_data[value_1['id']] = value_1;
+
+                });
+                $.each(cat_list_sorted, function (key, value) {
                     var task_list = [];
                     var list1_data = [];
-                    $.each(value['task_set'], function (key_1, value_1) {
+                    var cat_total_list =  ['Total', value['expense'], value['price'], value['total']];
+                    var cat_total = '<tr class="total"><th>' + cat_total_list.join('</th><th>$ ') + '</th></tr>';
+                    $.each(cat_data[value['id']]['task_set'], function (key_1, value_1) {
                         task_list.push(value_1);
 
                     });
@@ -391,21 +330,16 @@
                         return 0;
                     });
                     $.each(task_list, function (key_1, value_1) {
-                        var list2_data = [];
-                        $.each(value_1, function (key_2, value_2) {
-                            list2_data.push('<li>' + key_2 + ' : ' + value_2 + '</li>');
-                        });
-                        var list_item = '<li id="task_' + 'id=' + value_1['id'] + '">' + value_1['title'] + '</a>' + '<ul>' + list2_data.join('') + '</ul>' + '</li>';
-
-                        list1_data.push(list_item);
+                        var pre_list= [value_1['title'], '$ ' + value_1['expense'], '$ ' + value_1['price'], value_1['projected_completion_date']];
+                        list1_data.push('<tr><td>' + pre_list.join('</td><td>') + '</td></tr>');
                     });
-
-                    list_data.push('<dt>' + value['title'] + '</dt><dt><ul><li>exp:  $' +  value['expense'] + '</li><li>markup:  $' + value['price'] + '</li><li>total:  $' + value['total']
-                            + '</li><li>Tasks <ul>' + list1_data.join('') + '</ul></li></dt>'
+                    list_data.push('<div class="task-table"><h2>' + value['title'] + '</h2>' + '<table class="table table-striped">'
+                            + table_head + '<tbody>' + list1_data.join('') + cat_total + '</tbody></table></div>'
                     );
+
                     i++;
                 });
-                $('#task-list').html('<dl class="dl-horizontal">' + list_data.join('') + '</dl>');
+                $('#task-list').html(list_data.join(''));
 
             });
 

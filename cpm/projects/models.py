@@ -95,6 +95,7 @@ class Project(DateStamp, Slugged):
                     task['projected_completion_date'] = task['projected_completion_date'].toordinal()
                 task_set_json[task['id']] = task
             result_dict[cat_dict[cat].id] = {
+                'id': cat_dict[cat].id,
                 'slug': cat_dict[cat].slug,
                 'title': cat_dict[cat].title,
                 'title_url': urlquote(cat_dict[cat].title),

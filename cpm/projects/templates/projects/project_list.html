@@ -158,7 +158,7 @@
                         <div id="updates-carousel">
                             <!-- Carousel items -->
                             {% for project in project_list %}
-                                {% for update in project.update_set.all %}
+                                {% for update in project.update_set.all|dictsortreversed:"created" %}
                                     <div class="slider-item">
                                         <h3><i class="icon-calendar"></i>  {{ update.created }}</h3>
 
@@ -233,7 +233,7 @@
                         <div id="change-orders-carousel">
                             <!-- Carousel items -->
                             {% for project in project_list %}
-                                {% for co in project.changeorder_set.all %}
+                                {% for co in project.changeorder_set.all|dictsortreversed:"created" %}
                                     <div class="slider-item">
                                         <h3><i class="icon-calendar"></i>  {{ co.created }}</h3>
                                     <h4>
