@@ -12,8 +12,9 @@ DATABASES = {
     }
 }
 
-INSTALLED_APPS += ('debug_toolbar', 'django_extensions')
+INSTALLED_APPS += ('django_extensions',)
 ALLOWED_HOSTS += ['127.0.0.1', '127.0.0.1:8000']
+''''debug_toolbar',
 INTERNAL_IPS = ("127.0.0.1",)
 MIDDLEWARE_CLASSES += ('debug_toolbar.middleware.DebugToolbarMiddleware',)
 
@@ -29,3 +30,4 @@ DEBUG_TOOLBAR_PANELS = (
     'debug_toolbar.panels.logger.LoggingPanel',
 )
 INTERCEPT_REDIRECTS = False
+'''

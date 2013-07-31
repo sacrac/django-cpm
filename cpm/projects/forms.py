@@ -45,3 +45,20 @@ class ProjectForm(forms.ModelForm):
                 )
             )
         )
+
+
+class ProjectFilterForm(forms.Form):
+    date = forms.DateField(widget=SelectDateWidget(), label='Month')
+
+    def __init__(self, *args, **kwargs):
+        super(ProjectFilterForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            Div(
+                Field('date'),
+                css_class='pull-left'
+
+            )
+
+        )

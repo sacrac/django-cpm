@@ -1,9 +1,12 @@
+from calendar import month_name
 import json
 from crispy_forms.utils import render_crispy_form
+from django import forms
+from django.forms.extras.widgets import SelectDateWidget
 
 from django.utils.http import urlquote
 from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.views import generic
 from django.core.urlresolvers import reverse_lazy, reverse
 from django.http import HttpResponse
@@ -14,7 +17,7 @@ from tasks.models import TaskCategory
 from tasks.forms import TaskForm, TaskCategoryForm
 from jsonview.decorators import json_view
 
-from .forms import ProjectForm
+from .forms import ProjectForm, ProjectFilterForm
 from .models import Project
 
 
@@ -33,6 +36,7 @@ class ProjectDetailJSONView(generic.DetailView):
             'title_url': urlquote(self.object.title),
             'slug': self.object.slug,
             'user': self.object.user.id,
+            'username': self.object.user.username,
             'description': self.object.description,
             'completion': self.object.completion,
             'created': self.object.created.toordinal(),
@@ -56,8 +60,31 @@ class ProjectDetailView(AjaxableResponseMixin, generic.DetailView):
         return super(ProjectDetailView, self).get_context_data(**context)
 
 
-class ProjectListSuperView(generic.ListView):
-    model = Project
+
+
+def project_list_super(request, user=None, year=None, month=None):
+    user_list = User.objects.filter(is_staff=False)
+    project_select_form = ProjectFilterForm()
+    project_list = Project.objects.all()
+    if user is not None:
+        user = get_object_or_404(User, id=user)
+        project_list = project_list.filter(user=user)
+        user = user
+
+    if year is not None:
+        project_list = project_list.filter(created__year=year)
+        if month is not None:
+            project_list = project_list.filter(created__month=month)
+            month = month_name[int(month)]
+
+    context = {
+        "project_list": project_list, "year": year, "month": month,
+        "project_select_form": project_select_form,
+        "user_list": user_list, "project_user": user
+    }
+
+    return render(request, "projects/project_list_super.html", context)
+
 
 
 class ProjectListView(generic.ListView):

@@ -3,7 +3,8 @@ try:
 except ImportError:  # django < 1.4
     from django.conf.urls.defaults import *
 
-from .views import ProjectWizardView, ProjectFormView, ProjectUpdateView, ProjectDeleteView, ProjectDetailView, ProjectDetailJSONView, ProjectListView, ProjectRedirectView, set_task_order, ProjectListSuperView
+from .views import ProjectWizardView, ProjectFormView, ProjectUpdateView, ProjectDeleteView, ProjectDetailView, \
+    ProjectDetailJSONView, ProjectListView, ProjectRedirectView, set_task_order, project_list_super
 
 urlpatterns = patterns('projects',
                        url(r'^wizard/$', ProjectWizardView.as_view(), name='project-wizard'),
@@ -15,7 +16,11 @@ urlpatterns = patterns('projects',
                        url(r'^projects/json/(?P<pk>\d+)/$', ProjectDetailJSONView.as_view(), name='project-detail-json'),
                        url(r'^projects/(?P<pk>\d+)/$', ProjectDetailView.as_view(), name='project-detail'),
                        url(r'^projects/set_task_order/(?P<pk>\d+)/$', set_task_order, name='set-task-order'),
-                       url(r'^list/$', ProjectListSuperView.as_view(), name='project-list-super'),
+                       url("^list/user/(?P<user>\d+)/$", project_list_super, name='project-list-super-user'),
+                       url("^list/month/(?P<year>\d{4})/(?P<month>\d{1,2})/$", project_list_super,
+                           name='project-list-super-month'),
+                       url("^list/year/(?P<year>\d{4})/$", project_list_super, name='project-list-super-year'),
+                       url(r'^list/$', project_list_super, name='project-list-super'),
                        url(r'^([\d-]+)/$', ProjectListView.as_view(), name='project-list'),
                        url(r'^$', ProjectRedirectView.as_view(), name='project-redirect'),
 )

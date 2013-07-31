@@ -83,6 +83,7 @@
     </div>
     {% endif %}
 
+    {% if user == client or user.is_staff %}
 
     <div class="wpl-widget projects">
         <div class="well pad-0">
@@ -90,13 +91,6 @@
                 <i class="pull-left icon-home colour"></i>
                 <h2>Projects</h2>
             </div>
-
-
-
-            {% if user == client or user.is_superuser %}
-
-
-
 
             <table class="table">
                 <thead></thead>
@@ -111,7 +105,7 @@
                         <td class="span1">
                             {% if user.is_superuser %}
                                 <a class="btn btn-mini btn-info"
-                                   href="{% url 'updates:update-user-form' project.user_id  %}">Update</a>
+                                   href="{% url 'updates:update-project-form' project.user_id  %}">Update</a>
                             {% endif %}
                         </td>
                     </tr>
@@ -119,18 +113,14 @@
                 </tbody>
             </table>
 
-
-
-        {% endif %}
-
-
-
-
         </div>
     </div>
 
+    {% endif %}
+
     <div class="row">
 
+        {% if user == client or user.is_superuser %}
         <div class="wpl-widget updates">
             <div class="span6">
                 <div class="well pad-0">
@@ -141,14 +131,6 @@
                             <h2 class=""><span>Updates</span></h2>
                         </div>
                     </div>
-
-
-
-
-                    {% if user == client or user.is_superuser %}
-
-
-
                     <!-- Carousel nav -->
                 <div class="carousel-nav">
                     <div id="updates-next" class="widget-scroll-next3"><i class="icon-chevron-right white but_marg"></i></div>
@@ -195,12 +177,6 @@
 
                     </div>
 
-
-
-                {% endif %}
-
-
-
                 </div>
             </div>
         </div>
@@ -216,13 +192,6 @@
                             <h2 class=""><span>Change Orders</span></h2>
                         </div>
                     </div>
-
-
-
-                    {% if user == client or user.is_superuser %}
-
-
-
                     <!-- Carousel nav -->
                     <div class="carousel-nav">
                         <div id="change-orders-next" class="widget-scroll-next3"><i class="icon-chevron-right white but_marg"></i> </div>
@@ -323,7 +292,6 @@
 {% endblock extra_js %}
 
 {% block extra_css %}
-    <link rel='stylesheet' href="{% static 'css/font-awesome.min.css' %}">
     <style>
 
         .wpl-widget .well {

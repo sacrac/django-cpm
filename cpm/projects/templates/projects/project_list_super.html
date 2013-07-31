@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+{% load webdesign staticfiles %}
+
+{% block title %}Project Directory{% endblock %}
+
+
+{% block content %}
+
+    {% if project_user %}
+        <p class='lead'>
+            <em>
+                Showing projects for </em><strong>{{ project_user.username|title }}</strong>
+        </p>
+    {% elif year %}
+        <p class='lead'>
+            <em>
+                Showing projects for
+            </em>
+            <strong>
+                {% if month %}
+                    {{ month }},
+                {% endif %}
+                {{ year }}
+            </strong>
+        </p>
+    {% endif %}
+    <div class="wpl-widget projects">
+        <div class="well pad-0">
+            <div class="header">
+                <form class="form-inline pull-right" id="project-select-form">
+                    <label for="project-select">Project Quick Select:</label>
+                    <select id="project-select">
+                        <option value='0' selected>----------</option>
+                        {% for project in project_list|dictsortreversed:"modified" %}
+                            <option value="{{ project.id }}">
+                                {{ project.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </form>
+                <h2>Projects</h2>
+            </div>
+            <div class="content">
+                <form class="form-inline pull-left" id="project-filter-form">
+                    <label for="user-select">User:</label>
+                    <select id="user-select">
+                        <option value='0' selected>----------</option>
+                        {% for user in user_list %}
+                            <option value="{{ user.id }}">
+                                {{ user.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    {{ project_select_form }}
+                    <button type="submit" class="btn btn-info">Filter</button>
+                </form>
+                <div class="pull-right">
+
+                    <p>
+                        <small><em> *available filters:<strong> "user", "year", ("year" + "month")</strong></em></small>
+                    </p>
+                </div>
+
+                <table class="table table-bordered" id="project-list-table">
+
+                    <thead>
+                    <tr>
+                        <th>
+                            #
+                            <a class="sort desc" data-sort="data-i" data-order="desc"><i class="icon-chevron-down"></i></a>
+                            <a class="sort asc" data-sort="data-i" data-order="asc"><i class="icon-chevron-up"></i></a>
+                        </th>
+                        <th class="span4">
+                            Project Title
+                            <a class="sort desc" data-sort="data-title" data-order="desc"><i
+                                    class="icon-chevron-down"></i></a>
+                            <a class="sort asc" data-sort="data-title" data-order="asc"><i class="icon-chevron-up"></i></a>
+                        </th>
+                        <th class="span2">
+                            Client
+                            <a class="sort desc" data-sort="data-user" data-order="desc"><i
+                                    class="icon-chevron-down"></i></a>
+                            <a class="sort asc" data-sort="data-user" data-order="asc"><i
+                                    class="icon-chevron-up"></i></a>
+                        </th>
+                        <th class="">
+                            Expense
+                            <a class="sort desc" data-sort="data-exp" data-order="desc"><i
+                                    class="icon-chevron-down"></i></a>
+                            <a class="sort asc" data-sort="data-exp" data-order="asc"><i
+                                    class="icon-chevron-up"></i></a>
+                        </th>
+                        <th class="">
+                            Markdown
+                            <a class="sort desc" data-sort="data-markup" data-order="desc"><i
+                                    class="icon-chevron-down"></i></a>
+                            <a class="sort asc" data-sort="data-markup" data-order="asc"><i class="icon-chevron-up"></i></a>
+                        </th>
+                        <th class="">
+                            Total
+                            <a class="sort desc" data-sort="data-total" data-order="desc"><i
+                                    class="icon-chevron-down"></i></a>
+                            <a class="sort asc" data-sort="data-total" data-order="asc"><i class="icon-chevron-up"></i></a>
+                        </th>
+                        <th class="span2">
+                            Actions
+                        </th>
+
+                    </tr>
+
+                    </thead>
+
+                    <tr id="project-detail-row"></tr>
+                    {% for project in project_list|dictsortreversed:"modified" %}
+                        <tr class="mix project-simple" data-created="{{ project.created|stringformat:"dmy" }}"
+                            data-title="{{ project.slug }}" data-i="{{ forloop.counter }}"
+                            data-user="{{ project.user.username }}"
+                            data-exp="{{ project.get_project_expense }}" data-markup="{{ project.get_project_price }}"
+                            data-total="{{ project.get_project_total }}"
+                            id="project-simple-{{ project.id }}">
+                            <td>
+                                {{ forloop.counter }}
+                            </td>
+                            <td>
+                                <a class="expand-project" href="project_{{ project.id }}">
+                                    {{ project.title }}
+                                </a>
+                            </td>
+                            <td>
+                                {{ project.user.username }}
+                            </td>
+                            <td>
+                                $ {{ project.get_project_expense }}
+                            </td>
+                            <td>
+                                $ {{ project.get_project_price }}
+                            </td>
+                            <td>
+                                $ {{ project.get_project_total }}
+                            </td>
+                            <td>
+                                <ul class="unstyled list-small">
+                                    {% if user.is_superuser %}
+                                        <li>
+                                            <a href="{% url 'updates:update-project-form' project.id %}">
+                                                Create Update
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{% url "changes:change-project-form" project.id %}">
+                                                Create Change Order
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                    <li>
+                                        <a href="{% url "projects:project-detail" project.id %}">
+                                            View Project Page
+                                        </a>
+                                    </li>
+                                </ul>
+                            </td>
+
+
+                        </tr>
+
+                    {% endfor %}
+                </table>
+
+
+            </div>
+
+
+            <div id="project-detail"></div>
+        </div>
+    </div>
+
+
+{% endblock content %}
+
+
+{% block extra_js %}
+    <script src="{% static 'js/mixitup-1.5.4/jquery.mixitup.min.js' %}"></script>
+    <script type="text/javascript">
+
+        $(function () {
+
+            $('#project-list-table').mixitup({
+                layoutMode: 'list',
+                resizeContainer: false,
+                targetDisplayList: 'table-row'
+            });
+            $('#project-list-table').find('.sort.desc').hide();
+
+            $('select#id_date_day').remove();
+            $('select#id_date_year').before('<label for="id_date_year">Year:</label>').after($('select#id_date_month')).after(
+                    $('label[for="id_date_month"]'));
+            $('.form-inline').find('select').addClass('span2');
+            hideMonth();
+
+        });
+
+        $('#project-list-table thead').on('click', '.sort', function (e) {
+            e.preventDefault();
+            $(this).siblings().show();
+            $(this).hide();
+        });
+
+        function hideMonth() {
+            $('select#id_date_month').hide();
+            $('label[for="id_date_month"]').hide();
+        }
+        function showMonth() {
+            $('select#id_date_month').show();
+            $('label[for="id_date_month"]').show();
+
+        }
+
+        $('select#id_date_month').keypress('Enter', function (e) {
+            e.preventDefault();
+            if ($(this).val() == '0') {
+                $('#project-filter-form [type="submit"]').focus();
+            } else {
+                $('#project-filter-form').submit();
+            }
+        });
+
+        $('select#id_date_year').on('change', function (e) {
+            e.preventDefault();
+            if ($(this).val() == '0') {
+                hideMonth();
+            } else {
+                showMonth();
+            }
+        });
+
+        $('select#id_date_year').keypress('Enter', function (e) {
+            e.preventDefault();
+            if ($(this).val() == '0') {
+                $('#project-filter-form [type="submit"]').focus();
+            } else {
+                $('select#id_date_month').focus();
+            }
+        });
+        $('select#user-select').keypress('Enter', function (e) {
+            e.preventDefault();
+            if ($(this).val() == '0') {
+                $('select#id_date_year').focus();
+
+            } else {
+                $('#project-filter-form').submit();
+            }
+
+        });
+
+        $('#project-filter-form').on('submit', function (e) {
+            e.preventDefault();
+            var $this = $(this);
+            var page_link = '{% url "projects:project-list-super" %}';
+            var user;
+            var year;
+            var month;
+            if ($this.find('#user-select').val()) {
+                user = $('#user-select').val();
+                page_link += 'user/' + user + '/';
+            } else {
+                if ($this.find('#id_date_year').val() != '0') {
+                    year = $('#id_date_year').val();
+                    if ($this.find('#id_date_month').val() != '0') {
+                        month = $('#id_date_month').val();
+                        page_link += 'month/' + year + '/' + month + '/';
+                    } else {
+                        page_link += 'year/' + year + '/';
+                    }
+
+                }
+            }
+            window.location = page_link;
+        });
+
+        $('#project-select').on('change', function () {
+            var project_id = $(this).val();
+            if (project_id == '0') {
+                $('.projects tbody').find('tr').show();
+                $('#project-detail-row').hide();
+
+            } else {
+                $('.projects tbody').find('tr').not('#project-simple-' + project_id).hide();
+                $('#project-simple-' + project_id).show();
+                getProjectSummary($(this).val(), '#project-detail-' + $(this).val());
+                getProjectSummary(project_id, '#project-detail-row');
+                $('#project-detail-row').hide();
+            }
+
+        });
+        $('.projects').on('click', '.expand-project', function (e) {
+            e.preventDefault();
+            $('#project-list-table').find('.detail-row').remove();
+            var project_id = $(this).attr('href').split('_')[1];
+            getProjectSummary(project_id, '#project-detail-row');
+
+        });
+
+
+        function getProjectSummary(project_id, display_html) {
+            var project_simple = $('#project-simple-' + project_id).html();
+
+            var JSON_url = '/cpm/projects/json/' + project_id + '/';
+            var list_data = [];
+            var project_header = '<tr id="project-detail-row" class="sub-thead">' + project_simple + '</tr>';
+
+            $.getJSON(JSON_url, function (data) {
+                var i = 0;
+                var cat_list = [];
+                var cat_list_sorted = [];
+                var cat_data = {};
+
+                $.each(data['category_totals'], function (key, value) {
+                    cat_list.push(value);
+                });
+                cat_list_sorted = cat_list.sort(function (a, b) {
+                    if (a.order > b.order) return 1;
+                    if (a.order < b.order) return -1;
+                    return 0;
+                });
+                $.each(cat_list_sorted, function (key_1, value_1) {
+                    cat_data[value_1['id']] = value_1;
+
+                });
+                $.each(cat_list_sorted, function (key, value) {
+                    var x = 0;
+                    var task_list = [];
+                    var list1_data = [];
+                    var table_head = '<tr class="detail-row" class="sub-thead"><th>' + (i + 1) + '<th colspan="6">' + value['title'] + '</th></tr>';
+                    var cat_total_list = [value['expense'], value['price'], value['total']];
+                    var cat_total = '<tr class="total detail-row"><th>&nbsp;</th><th>Total</th><th>&nbsp;</th><th>$ '
+                            + cat_total_list.join('</th><th>$ ') + '</th><th>&nbsp;</th></tr>';
+                    $.each(cat_data[value['id']]['task_set'], function (key_1, value_1) {
+                        task_list.push(value_1);
+
+                    });
+                    task_list = task_list.sort(function (a, b) {
+                        if (a._order > b._order) return 1;
+                        if (a._order < b._order) return -1;
+                        return 0;
+                    });
+                    $.each(task_list, function (key_1, value_1) {
+                        var pre_list = [value_1['title'], '$ ' + value_1['expense'], '$ ' + value_1['price'],
+                            '$ ' + (value_1['expense'] + value_1['price']), value_1['projected_completion_date']];
+                        list1_data.push('<tr class="detail-row"><td><small><em>' + (x + 1) + '</em></small></td><td colspan="2">' + pre_list.join('</td><td>') + '</td></tr>');
+                        x++;
+                    });
+                    list_data.push(table_head + list1_data.join('') + cat_total
+                    );
+
+                    i++;
+                });
+
+
+                $(display_html).replaceWith(project_header + list_data.join(''));
+
+            });
+
+        }
+
+
+    </script>
+
+
+
+{% endblock extra_js %}
+
+{% block extra_css %}
+    <style>
+        .wpl-widget.projects .well {
+            background-color: #f7f7f7;
+
+        }
+
+        .projects tr {
+            background-color: #d2e7e3;
+        }
+
+        .projects .content thead tr {
+            background-color: #c8756c;
+            color: #f7f7f7;
+        }
+
+        .projects .table thead .sort {
+            color: #f7f7f7;
+            padding: 3px;
+        }
+
+        .projects .table thead th {
+            padding: 2px;
+            font-size: 14px;
+        }
+
+        .projects .sub-thead {
+            background-color: #64aca1;
+            color: #f7f7f7;
+        }
+
+        .projects .sub-thead a {
+            color: #f2f2f2;
+            text-shadow: #3F8076 0 0 3px;
+            font-weight: bolder;
+        }
+
+        .projects .sub-thead a:hover {
+            text-shadow: #3F8076 0 0 2px;
+            text-decoration: none;
+        }
+
+        .projects .total {
+            color: #282828;
+        }
+
+        .projects .project-simple {
+            background-color: #f6e8e6;
+        }
+
+
+    </style>
+
+{% endblock extra_css %}

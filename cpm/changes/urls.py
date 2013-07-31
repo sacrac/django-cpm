@@ -7,7 +7,7 @@ from .views import ChangeOrderProjectFormView, ChangeOrderFormView, ChangeOrderU
 
 urlpatterns = patterns('changes',
                        url(r'^tasks/json/(?P<pk>\d+)/$', change_order_tasks_json, name='change-tasks-json'),
-                       url(r'^create/([\d-]+)/$', ChangeOrderProjectFormView.as_view(), name='change-user-form'),
+                       url(r'^create/([\d-]+)/$', ChangeOrderProjectFormView.as_view(), name='change-project-form'),
                        url(r'^create/$', ChangeOrderFormView.as_view(), name='change-form'),
                        url(r'^update/(?P<pk>\d+)/$', ChangeOrderUpdateView.as_view(), name='change-change'),
                        url(r'^delete/(?P<pk>\d+)/$', ChangeOrderDeleteView.as_view(), name='change-delete'),
