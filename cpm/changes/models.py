@@ -11,6 +11,7 @@ from tasks.models import Task
 class ChangeOrder(DateStamp, Slugged):
     project = models.ForeignKey(Project)
     description = models.TextField(blank=True)
+    #approved = models.BooleanField(default=0)
     tasks = models.ManyToManyField(Task, blank=True, related_name='changes')
 
     def get_absolute_url(self):
