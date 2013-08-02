@@ -3,8 +3,8 @@
 *static/font/*
 *static/media/*
 *static/css/*
+*static/img/*
 deploy/*
-static/
 .idea
 *bootstrap*
 *.pyc

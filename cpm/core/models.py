@@ -6,6 +6,7 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from django.utils.encoding import smart_unicode
 from django.core.exceptions import ObjectDoesNotExist
 
+
 class DateStamp(models.Model):
     """
     An abstract base class model that provides self-updating ``created`` and ``modified`` fields.
@@ -88,9 +89,8 @@ class Slugged(models.Model):
     """
 
     title = models.CharField(_("Title"), max_length=500)
-    slug = models.CharField(_("URL"), max_length=2000, blank=True, null=True,
-            help_text=_("Leave blank to have the URL auto-generated from "
-                        "the title."))
+    slug = models.CharField(_("Slug"), max_length=2000, blank=True, null=True,
+                            help_text=_("Leave blank to have this auto-generated from the title. (recommended)"))
 
     class Meta:
         abstract = True
@@ -104,7 +104,7 @@ class Slugged(models.Model):
         """
         if not self.slug:
             self.slug = self.get_slug()
-        # For custom content types, use the ``Page`` instance for
+            # For custom content types, use the ``Page`` instance for
         # slug lookup.
         concrete_model = base_concrete_model(Slugged, self)
         slug_qs = concrete_model.objects.exclude(id=self.id)
@@ -120,5 +120,6 @@ class Slugged(models.Model):
     def admin_link(self):
         return "<a href='%s'>%s</a>" % (self.get_absolute_url(),
                                         ugettext("View on site"))
+
     admin_link.allow_tags = True
     admin_link.short_description = ""

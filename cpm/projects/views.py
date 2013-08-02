@@ -3,13 +3,14 @@ import json
 from crispy_forms.utils import render_crispy_form
 from django import forms
 from django.forms.extras.widgets import SelectDateWidget
+from django.forms.models import inlineformset_factory
 
 from django.utils.http import urlquote
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
 from django.core.urlresolvers import reverse_lazy, reverse
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.base import RedirectView
 
 from core.views import AjaxableResponseMixin
@@ -18,7 +19,7 @@ from tasks.forms import TaskForm, TaskCategoryForm
 from jsonview.decorators import json_view
 
 from .forms import ProjectForm, ProjectFilterForm
-from .models import Project
+from .models import Project, ProjectImage
 
 
 class ProjectDetailJSONView(generic.DetailView):
@@ -219,7 +220,17 @@ def set_task_order(request, pk):
         return {'task_order': project.get_task_order(), 'success': False}
 
 
+def project_images(request, project_id):
+    project = Project.objects.get(pk=project_id)
+    FormSet = inlineformset_factory(Project, ProjectImage)
+    formset = FormSet(instance=project)
+    if request.method == 'POST':
+        formset = FormSet(request.POST, request.FILES, instance=project)
+        if formset.is_valid():
+            formset.save()
+            return HttpResponseRedirect(reverse_lazy('projects:project-list-super'))
 
+    return render(request, 'projects/project_images.html', {'formset': formset, 'project': project})
 
 
 

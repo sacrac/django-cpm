@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="row">
+        <form action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ formset }}
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+{% endblock %}

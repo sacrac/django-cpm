@@ -30,7 +30,7 @@ class Update(DateStamp, Slugged):
 
 
 class UpdateImage(Slugged):
-    update = models.ForeignKey(Update, related_name="images")
+    update = models.ForeignKey(Update, related_name="update_images")
     image = models.ImageField(max_length=200, upload_to='updates')
 
     class Meta:

@@ -108,37 +108,12 @@ class Project(DateStamp, Slugged):
         return result_dict
 
 
-class ProjectImage(models.Model):
-    project = models.ForeignKey(Project, related_name="images")
-    content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
-    content_object = generic.GenericForeignKey('content_type', 'object_id')
-    image = models.ImageField(_("Image"), max_length=200, upload_to='galleries')
-    title = models.CharField(_("Title"), max_length=1000,
-                             blank=True)
+class ProjectImage(Slugged):
+    project = models.ForeignKey(Project, related_name="project_images")
+    image = models.ImageField(max_length=200, upload_to='projects')
 
     class Meta:
-        verbose_name = _("Image")
-        verbose_name_plural = _("Images")
+        verbose_name = _("Project Image")
+        verbose_name_plural = _("Project Images")
         order_with_respect_to = 'project'
-
-    def __unicode__(self):
-        return self.description
-
-    def save(self, *args, **kwargs):
-        """
-        If no description is given when created, create one from the
-        file name.
-        """
-        if not self.id and not self.title:
-            name = unquote(self.image.url).split("/")[-1].rsplit(".", 1)[0]
-            name = name.replace("'", "")
-            name = "".join([c if c not in punctuation else " " for c in name])
-            # str.title() doesn't deal with unicode very well.
-            # http://bugs.python.org/issue6412
-            name = "".join([s.upper() if i == 0 or name[i - 1] == " " else s
-                            for i, s in enumerate(name)])
-            self.title = name
-        super(ProjectImage, self).save(*args, **kwargs)
-
 

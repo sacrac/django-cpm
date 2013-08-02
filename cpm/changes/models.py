@@ -11,10 +11,12 @@ from tasks.models import Task
 class ChangeOrder(DateStamp, Slugged):
     project = models.ForeignKey(Project)
     description = models.TextField(blank=True)
-    #approved = models.BooleanField(default=0)
+    approved = models.NullBooleanField()
     tasks = models.ManyToManyField(Task, blank=True, related_name='changes')
 
     def get_absolute_url(self):
         return reverse('changes:change-detail', kwargs={'pk': self.pk})
 
+    def get_update_url(self):
+        return reverse('changes:change-update', kwargs={'pk': self.pk})
 

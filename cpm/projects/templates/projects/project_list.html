@@ -160,6 +160,42 @@
                                                     {{ update.description }}
                                                 </p>
                                         </div>
+
+
+                                        <div class="row">
+                                            {% if update.update_images.all %}
+
+                                                {% for img in update.update_images.all %}
+                                                    <div class="span1">
+                                                        <img class="thumbnail" src="{{ img.image.url }}">
+                                                    </div>
+                                                {% endfor %}
+
+                                            {% else %}
+
+                                                <div class="span1">
+                                                    <img class="thumbnail" src="holder.js/50x50/gray">
+                                                </div>
+                                                <div class="span1">
+                                                    <img class="thumbnail" src="holder.js/50x50/gray">
+                                                </div>
+                                                <div class="span1">
+                                                    <img class="thumbnail" src="holder.js/50x50/gray">
+                                                </div>
+                                                <div class="span1">
+                                                    <img class="thumbnail" src="holder.js/50x50/gray">
+                                                </div>
+                                                <div class="span1">
+                                                    <img class="thumbnail" src="holder.js/50x50/gray">
+                                                </div>
+                                                <div class="span1">
+                                                    <img class="thumbnail" src="holder.js/50x50/gray">
+                                                </div>
+                                                </div>
+                                            {% endif %}
+                                    </div>
+
+
                                         {% if update.tasks.all %}
                                             <h5>Tasks completed this update: </h5>
                                     <ul class="nav nav-list">
@@ -169,7 +205,10 @@
                                             </li>
                                         {% endfor %}
                                     </ul>
-                                    {% endif %}
+                                        {% endif %}
+
+
+
                                     </div>
                                 {% endfor %}
                             {% endfor %}
@@ -204,6 +243,43 @@
                             {% for project in project_list %}
                                 {% for co in project.changeorder_set.all|dictsortreversed:"created" %}
                                     <div class="slider-item">
+
+                                    {% if co.approved == None %}
+
+                                    <div class="alert alert-block fade in out" id="co-alert_{{ co.id }}">
+                                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                                        <h4>Heads up!</h4>
+                                        <br/>
+                                        This change order, <strong>{{ co.title }}</strong>, is awaiting your approval. Please review it and decide to either:
+                                        <br/>
+                                        <br/>
+                                        <ul class="inline text-center">
+                                            <li>
+                                                <a id="co-1_{{ co.id }}" class="co-approve" href="#"><i class="icon-thumbs-up"></i></a>
+                                                approve
+                                            </li>
+                                            <li>&nbsp;</li>
+                                            <li>
+                                                - or -
+                                            </li>
+                                            <li>&nbsp;</li>
+                                            <li>
+                                                <a id="co-0_{{ co.id }}" class="co-disapprove" href="#"><i class="icon-thumbs-down"></i></a>
+                                                reject
+                                            </li>
+
+                                        </ul>
+                                        <br/>
+                                        <small>*hint: just click the thumbs up or thumbs down to send your reply</small>
+
+                                    </div>
+                                        {% elif co.approved == False %}
+                                        <h6 class="pull-right">Revision in progress</h6>
+                                        {% else %}
+                                        <h6 class="pull-right">You approved this {{ co.modified|date:"N d" }}</h6>
+
+                                    {% endif %}
+
                                         <h3><i class="icon-calendar"></i>  {{ co.created }}</h3>
                                     <h4>
                                         <a href="{% url 'projects:project-detail' project.id %}">
@@ -287,7 +363,56 @@
                 next: { button: "#updates-next", key: "right" }
             });
         });
-        //]]>
+
+        $('.change-orders .alert').on('click', '.co-approve', function(e) {
+            e.preventDefault();
+            var cookie = 'csrfmiddlewaretoken=' + getCookie('csrftoken') + '&';
+            var co_id = $(this)[0].id.split('_')[1];
+            var ajaxPost = cookie + 'approved=' + 2;
+            console.log(ajaxPost);
+            $.ajax({ url: '/cpm/changes/update/json/' + co_id + '/',
+                type: 'POST',
+                data: ajaxPost,
+                success: function (data) {
+                    console.log('success' + data['success']);
+                    $('#co-alert_'+co_id).addClass('alert-success').html(
+                                    '<button type="button" class="co-approve close" data-dismiss="alert">&times;</button>'
+                                    + '<h4>Success!</h4>'
+                                    + 'Your reply was submitted! Thank you.'
+                    );
+                },
+                error: function (data) {
+                    console.log(data['error']);
+                }
+            });
+
+        });
+        $('.change-orders .alert').on('click', '.co-disapprove', function(e) {
+            e.preventDefault();
+            var co_id = $(this)[0].id.split('_')[1];
+            console.log(co_id);
+            var cookie = 'csrfmiddlewaretoken=' + getCookie('csrftoken') + '&';
+            var ajaxPost = cookie + 'approved=' + 3;
+            console.log(ajaxPost);
+            $.ajax({ url: '/cpm/changes/update/json/' + co_id + '/',
+                type: 'POST',
+                data: ajaxPost,
+                success: function (data) {
+                    console.log('success' + data['success']);
+                        $('#co-alert_'+co_id).addClass('alert-danger').html(
+                            '<button type="button" class="co-approve close" data-dismiss="alert">&times;</button>'
+                                + '<h4>Thank you</h4>'
+                                + 'Your reply was submitted, we will get in touch with you to revise the change order.'
+                        );
+                },
+                error: function (data) {
+                    console.log(data['error']);
+                }
+            });
+
+        });
+
+            //]]>
     </script>
 {% endblock extra_js %}
 
@@ -341,5 +466,12 @@
             height: auto !important;
         }
         .images-horizontal div:first-child {margin-left: 0;}
+            .icons{list-style-type:none;margin:0}
+            .icons li [class^="icon-"],.icons li [class*=" icon-"]{display:inline-block;width:1.2857142857142858em;text-align:center; margin-left:-3px; margin-right:4px;
+            }
+
+
+
+
     </style>
 {% endblock extra_css %}

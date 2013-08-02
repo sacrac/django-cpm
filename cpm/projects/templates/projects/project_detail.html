@@ -71,11 +71,30 @@
 
                                 <div class="span6">
 
+                                {% if update.update_images.all %}
+
+                                    {% for img in update.update_images.all %}
+
+                                    {% if forloop.first %}
+                                    <img class="thumbnail" src="{{ img.image.url }}">
+                                    <div class="row">
+                                        {% else %}
+                                        <div class="span1">
+                                            <img class="thumbnail" src="{{ img.image.url }}">
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                    </div>
+
+                                {% else %}
                                     <img class="thumbnail" src="holder.js/450x300/gray">
 
                                     <div class="row">
-                                        <div class="span2">
-                                            <img class="thumbnail" src="holder.js/130x50/gray">
+                                        <div class="span1">
+                                            <img class="thumbnail" src="holder.js/50x50/gray">
+                                        </div>
+                                        <div class="span1">
+                                            <img class="thumbnail" src="holder.js/50x50/gray">
                                         </div>
                                         <div class="span1">
                                             <img class="thumbnail" src="holder.js/50x50/gray">
@@ -90,6 +109,7 @@
                                             <img class="thumbnail" src="holder.js/50x50/gray">
                                         </div>
                                     </div>
+                                {% endif %}
 
 
                                     {% if update.tasks.all %}
@@ -248,12 +268,21 @@
     </div>
     <div id="galleries" class="tab-pane">
         <div class="galleries">
-            <div class="header">
-                <h2>Gallery</h2>
-            </div>
 
+                <div class="header">
+                    <h2>Gallery</h2>
+                </div>
+                    <div class="row">
+                        {% for img in project.project_images.all %}
 
+                        <div class="span4">
+                        <img class="thumbnail" src="{{ img.image.url }}">
+                        </div>
 
+                        {% endfor %}
+
+                    </div>
+                </div>
         </div>
 
     </div>

@@ -16,11 +16,6 @@ from .forms import UpdateWizardForm1, UpdateWizardForm2
 from django.contrib.formtools.wizard.views import SessionWizardView
 
 
-#UPDATE_WIZARD_TEMPLATES
-
-#UPDATE_WIZARD_FORMS =
-
-
 class UpdateWizardView(SessionWizardView):
     #def get_template_names(self):
 

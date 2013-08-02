@@ -4,7 +4,7 @@ except ImportError:  # django < 1.4
     from django.conf.urls.defaults import *
 
 from .views import ProjectWizardView, ProjectFormView, ProjectUpdateView, ProjectDeleteView, ProjectDetailView, \
-    ProjectDetailJSONView, ProjectListView, ProjectRedirectView, set_task_order, project_list_super
+    ProjectDetailJSONView, ProjectListView, ProjectRedirectView, set_task_order, project_list_super, project_images
 
 urlpatterns = patterns('projects',
                        url(r'^wizard/$', ProjectWizardView.as_view(), name='project-wizard'),
@@ -13,6 +13,7 @@ urlpatterns = patterns('projects',
                        url(r'^update/(?P<pk>\d+)/$', ProjectUpdateView.as_view(), name='project-update'),
                        url(r'^delete/(?P<pk>\d+)/$', ProjectDeleteView.as_view(), name='project-delete'),
                        #url(r'^users/([\d-]+)/$', ProjectUserListView.as_view(), name='project-user-list'),
+                       url(r'^images/(?P<project_id>\d+)/$', project_images, name='project-images-formset'),
                        url(r'^projects/json/(?P<pk>\d+)/$', ProjectDetailJSONView.as_view(), name='project-detail-json'),
                        url(r'^projects/(?P<pk>\d+)/$', ProjectDetailView.as_view(), name='project-detail'),
                        url(r'^projects/set_task_order/(?P<pk>\d+)/$', set_task_order, name='set-task-order'),
