@@ -222,7 +222,6 @@ class TaskCategoryListView(generic.ListView):
 
         return context
 
-
 class TaskCategoryListViewAlt(TaskCategoryListView):
 
     def get_queryset(self):
