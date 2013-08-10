@@ -74,19 +74,27 @@ class Task(Slugged):
 
 
 class TaskCategory(Slugged):
+    parent = models.ForeignKey("TaskCategory", blank=True, null=True, related_name="children")
+    ascendants = models.CharField(editable=False, max_length=1000, null=True)
     order = models.IntegerField(blank=True, null=True)
     description = models.TextField(blank=True)
 
     class Meta:
-        ordering = ['order']
-        get_latest_by = 'order'
+        ordering = ('order',)
+        order_with_respect_to = 'parent'
 
     def save(self, *args, **kwargs):
         if self.order is None:
             if not TaskCategory.objects.all():
                 self.order = 0
-            else:
-                self.order = TaskCategory.objects.latest().order + 1
+            elif self.parent:
+                self.order = self.parent.
+        ascendants = [str(self.id)]
+        parent = self.parent
+        while parent is not None:
+            ascendants.insert(0, str(parent.id))
+            parent = parent.parent
+        self.ascendants = ",".join(ascendants)
         super(TaskCategory, self).save(*args, **kwargs)
 
     def get_update_url(self):
@@ -103,3 +111,5 @@ class TaskCategory(Slugged):
         for p in project.task_set.filter(category=self):
             total += p.expense
         return total
+
+

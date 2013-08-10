@@ -21,4 +21,5 @@ urlpatterns = patterns('',
                        url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='logout'),
                        url(r'^accounts/', include('accounts.urls', namespace='accounts')),
                        url(r'^admin/', include(admin.site.urls)),
+                       url(r'^snippets/', 'core.views.snippet_list', name='snippet-list')
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

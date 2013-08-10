@@ -260,7 +260,7 @@
             var user;
             var year;
             var month;
-            if ($this.find('#user-select').val()) {
+            if (!($this.find('#user-select').val() == 0)) {
                 user = $('#user-select').val();
                 page_link += 'user/' + user + '/';
             } else {

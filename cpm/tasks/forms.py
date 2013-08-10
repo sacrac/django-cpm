@@ -58,7 +58,7 @@ class TaskForm(forms.ModelForm):
 class TaskCategoryForm(forms.ModelForm):
     class Meta:
         model = TaskCategory
-        fields = ['title', 'order']
+        fields = ['title', 'order', 'description']
         widgets = {
             'order': forms.HiddenInput(),
         }
@@ -75,6 +75,7 @@ class TaskCategoryForm(forms.ModelForm):
             Div(
                 Div(
                     Field('title'),
+                    'description',
                     'order'
                 ),
                 Div(

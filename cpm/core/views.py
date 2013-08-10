@@ -1,6 +1,7 @@
 import json
 
 from django.http import HttpResponse
+from django.shortcuts import render
 
 
 class AjaxableResponseMixin(object):
@@ -38,3 +39,11 @@ class AjaxableResponseMixin(object):
             return self.render_to_json_response(data)
         else:
             return response
+
+import urllib
+
+def snippet_list(request):
+    json_str = urllib.URLopener().open('http://127.0.0.1:8010/snippets/')
+    snippets = json.load(json_str)['results']
+    print(snippets)
+    return render(request, 'core/snippet_list.html', {'snippet_list': snippets})

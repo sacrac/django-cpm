@@ -114,6 +114,7 @@ INSTALLED_APPS = (
     'crispy_forms',
     'braces',
     #'timelines',
+    'core',
     'accounts',
     'projects',
     'tasks',

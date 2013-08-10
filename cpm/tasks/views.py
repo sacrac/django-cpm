@@ -222,8 +222,37 @@ class TaskCategoryListView(generic.ListView):
 
         return context
 
+
+class TaskCategoryListViewAlt(TaskCategoryListView):
+
+    def get_queryset(self):
+        return TaskCategory.objects.all().order_by('ascendants')
+
+    def get(self, request, *args, **kwargs):
+        self.queryset = super(TaskCategoryListViewAlt, self).get_queryset()
+        context = {'category_list': []}
+        for cat in self.get_queryset():
+            if cat.parent:
+                cat_parent = cat.parent_id
+            else:
+                cat_parent = None
+
+            context['category_list'].append({
+                'id': cat.id,
+                'title': cat.title,
+                'title_url': urlquote(cat.title),
+                'update_url': cat.get_update_url(),
+                'description': cat.description,
+                'parent': cat_parent,
+                'ascendants': cat.ascendants,
+                '_order': cat._order
+                })
+
+        return context
+
+
 @json_view
-def task_category_json(request, pk, project_id):
+def task_category_json(request, pk):
     category = get_object_or_404(TaskCategory, id=pk)
     context = {
         'id': category.id,
@@ -232,7 +261,6 @@ def task_category_json(request, pk, project_id):
         'slug': category.slug,
         'description': category.description,
         'update_url': category.get_update_url(),
-        'category_totals': category.get_project_category_totals(project_id)
     }
 
     return context

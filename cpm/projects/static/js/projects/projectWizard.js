@@ -185,6 +185,7 @@ function getProjectSummary(project_id) {
                 //});
                 var list_item = '<li id="task_' + 'id=' + value_1['id'] + '"><a href="' + value_1['update_url'] + '">'
                     + value_1['title'] + '</a>'
+                    + value_1['description']
                     //+ <ul>' + list2_data.join('') + '</ul>'
                     + '</li>';
                 var list_item_simple = '<li class="disabled" id="task_' + 'id=' + value_1['id'] + '"><a href="' + value_1['update_url'] + '">' + value_1['title'] + '</a></li>';

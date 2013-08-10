@@ -89,6 +89,7 @@ class Project(DateStamp, Slugged):
             for task in task_set:
                 task['title_url'] = urlquote(task['title'])
                 task['update_url'] = task_set_objects.get(id=task['id']).get_update_url()
+                task['description'] = task_set_objects.get(id=task['id']).description
                 if task['completion_date']:
                     task['completion_date'] = task['completion_date'].toordinal()
                 if task['projected_completion_date']:

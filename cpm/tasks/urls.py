@@ -4,7 +4,7 @@ except ImportError:  # django < 1.4
     from django.conf.urls.defaults import *
 
 from .views import TaskFormView, TaskUpdateView, TaskDeleteView, TaskListView, TaskDetailView, manage_tasks, \
-    TaskListUpdateView, TaskCategoryDeleteView, TaskCategoryUpdateView, TaskCategoryFormView, manage_categories, task_category_json, TaskCategoryListView
+    TaskListUpdateView, TaskCategoryDeleteView, TaskCategoryUpdateView, TaskCategoryFormView, manage_categories, task_category_json, TaskCategoryListView, TaskCategoryListViewAlt
 
 urlpatterns = patterns('tasks',
                        url(r'^category/create/$', TaskCategoryFormView.as_view(), name='task-category-form'),
@@ -13,8 +13,10 @@ urlpatterns = patterns('tasks',
                        url(r'^category/delete/(?P<pk>\d+)/$', TaskCategoryDeleteView.as_view(),
                            name='task-category-delete'),
                        url(r'^category/manage/$', manage_categories, name='category-manager'),
-                       url(r'^category/json/(?P<pk>\d+)/(?P<project_id>\d+)/$',
+                       url(r'^category/json/(?P<pk>\d+)/$',
                            task_category_json, name='task-category-detail-json'),
+                       url(r'^category/alt/$', TaskCategoryListViewAlt.as_view(),
+                           name='task-category-list-alt'),
                        url(r'^category/$', TaskCategoryListView.as_view(),
                            name='task-category-list'),
                        url(r'^create/$', TaskFormView.as_view(), name='task-form'),
