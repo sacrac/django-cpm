@@ -222,10 +222,60 @@ class TaskCategoryListView(generic.ListView):
 
         return context
 
+def tree_branch(branch):
+    if branch.parent:
+        parent_id = branch.parent_id
+    else:
+        parent_id = None
+    return {
+        'id': branch.id,
+        'parent': parent_id,
+        '_order': branch._order,
+        'title': branch.title,
+        'children': []
+    }
+
+def get_r_branch(tree):
+    for child in tree.children.all():
+        yield child
+        for grandchild in get_r_branch(child):
+            yield grandchild
+
+def make_tree_branch(branch):
+    for item in get_r_branch(branch):
+        p = tree_branch(item)
+        if item.parent == branch:
+            parent = (item, p)
+        elif item.parent == parent[0]:
+            parent[1]['children'].append(p)
+        else:
+            tree.append(parent[1])
+
+
 class TaskCategoryListViewAlt(TaskCategoryListView):
 
     def get_queryset(self):
-        return TaskCategory.objects.all().order_by('ascendants')
+        self.primary_categories = TaskCategory.objects.filter(parent=None)
+        self.tree_set = []
+        for pcat in self.primary_categories:
+            pcat_obj = tree_branch(pcat)
+
+            children = list(pcat.children.all())
+            for i, child in enumerate(children):
+                while children is not None:
+                    child_obj = tree_branch(child)
+                    children = child.children.all()
+
+                while cchildren is not None:
+
+
+
+
+
+
+
+
+             self.tree_set.append({
 
     def get(self, request, *args, **kwargs):
         self.queryset = super(TaskCategoryListViewAlt, self).get_queryset()

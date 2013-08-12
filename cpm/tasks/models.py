@@ -80,15 +80,13 @@ class TaskCategory(Slugged):
     description = models.TextField(blank=True)
 
     class Meta:
-        ordering = ('order',)
+        ordering = ('ascendants',)
         order_with_respect_to = 'parent'
 
     def save(self, *args, **kwargs):
         if self.order is None:
             if not TaskCategory.objects.all():
                 self.order = 0
-            elif self.parent:
-                self.order = self.parent.
         ascendants = [str(self.id)]
         parent = self.parent
         while parent is not None:
