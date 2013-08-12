@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<form method="post" action="?next=/">{% csrf_token %}
+<form method="post" action="?next={% url 'projects:project-redirect' %}">{% csrf_token %}
 {{ form.as_p }}
 <input type="submit" value="Submit" />
 </form>

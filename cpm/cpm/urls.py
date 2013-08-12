@@ -7,6 +7,7 @@ except ImportError:  # django < 1.4
     from django.conf.urls.defaults import *
 
 from django.contrib import admin
+from projects.views import ProjectRedirectView
 
 admin.autodiscover()
 
@@ -21,4 +22,5 @@ urlpatterns = patterns('',
                        url(r'^accounts/logout/$', 'django.contrib.auth.views.logout_then_login', name='logout'),
                        url(r'^accounts/', include('accounts.urls', namespace='accounts')),
                        url(r'^admin/', include(admin.site.urls)),
+                       url(r'^$', ProjectRedirectView.as_view()),
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -52,7 +52,7 @@
                 {% endif %}
             </ul>
         </li>
-        {% if user.is_superuser %}
+        {% if user.is_staff %}
             <li class="dropdown"><a href="#" data-toggle="dropdown">Manage</a>
                 <ul class="dropdown-menu">
                     <li class="dropdown-submenu"><a href="{% url 'projects:project-list-super' %}">Projects</a>
@@ -89,6 +89,7 @@
 </div>
 </div>
 </div>
+</nav>
 
     <header>
     <div class="container">

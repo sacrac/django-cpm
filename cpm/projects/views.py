@@ -2,6 +2,7 @@ from calendar import month_name
 import json
 from crispy_forms.utils import render_crispy_form
 from django import forms
+from django.contrib.auth.decorators import login_required
 from django.forms.extras.widgets import SelectDateWidget
 from django.forms.models import inlineformset_factory
 
@@ -197,13 +198,16 @@ class ProjectRedirectView(RedirectView):
     query_string = True
 
     def get_redirect_url(self, **kwargs):
-        user = self.request.user.id
-        return reverse('projects:project-list', args=(user,))
+        if not self.request.user.is_authenticated():
+            return reverse('login')
+        else:
+            return reverse('projects:project-list', args=(self.request.user.id,))
+
 
 
 class ProjectDeleteView(generic.DeleteView):
     model = Project
-    success_url = reverse_lazy('projects:project-list')
+    success_url = reverse_lazy('projects:project-list-super')
 
 
 @json_view
