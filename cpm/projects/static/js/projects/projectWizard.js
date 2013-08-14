@@ -157,16 +157,17 @@ $('#task-list').on("sortstop", function (event, ui) {
 });
 
 $('#task-category-list').sortable({
-    axis: 'y',
     containment: 'parent',
     connectWith: 'parent',
     delay: 50,
     distance: 10,
+    placeholder: 'placeholder',
+    dropOnEmpty: true,
     items: 'li[id^="cat"]'
 });
 
 var devList = [];
-$('#task-category-list').on("sortstop", function (event, ui) {
+$('#task-category-list').on("sortupdate", function (event, ui) {
 
     var formCount = 0;
     var jsonList = descendantsToList(project_summary_json);

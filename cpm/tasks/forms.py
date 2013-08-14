@@ -61,7 +61,6 @@ class TaskCategoryForm(forms.ModelForm):
         fields = ['title', 'order', 'description', 'parent']
         widgets = {
             'order': forms.HiddenInput(),
-            'parent': forms.HiddenInput(),
         }
 
     def __init__(self, *args, **kwargs):
