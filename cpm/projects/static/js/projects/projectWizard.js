@@ -159,30 +159,40 @@ $('#task-list').on("sortstop", function (event, ui) {
 $('#task-category-list').sortable({
     axis: 'y',
     containment: 'parent',
+    connectWith: 'parent',
     delay: 50,
     distance: 10,
     items: 'li[id^="cat"]'
 });
 
-var devList;
+var devList = [];
 $('#task-category-list').on("sortstop", function (event, ui) {
 
-    var catList = $(this).sortable('toArray');
     var formCount = 0;
     var jsonList = descendantsToList(project_summary_json);
     console.log(jsonList);
-    devList = $(this).sortable('widget');
+    var catList = $(this).sortable('widget').find('li[id^="cat"]');
 
     var cats = [];
 
     for (var i = 0; i < catList.length; i++) {
 
-        var cat_id = catList[i].split('_')[1].split('=')[1];
+        var $catElem = $(catList[i]);
+        var cat_id = $catElem.attr('id').split('_')[1].split('=')[1];
         var jsonItem = jsonList.findInArray('id', cat_id);
+        if ($catElem.parent().parent('[id^="cat"]')[0]) {
+            var cat_parent = $($catElem.parent().parent('[id^="cat"]')[0])
+                .attr('id').split('_')[1].split('=')[1];
+            devList.push($($catElem.parent().parent('[id^="cat"]')));
+            console.log(cat_parent);
+        } else {
+            cat_parent = null;
+        }
         var cat = {
             'id': cat_id,
             'title': jsonItem.title_url,
-            'order': i
+            'order': i,
+            'parent': cat_parent
         };
         cats.push(cat);
         formCount += 1;

@@ -45,7 +45,14 @@ def manage_categories(request):
         print formset
         formset.save()
         for form in formset:
-            print form.instance.id
+            cat = TaskCategory.objects.get(id=form.instance.id)
+            if cat.children.all():
+                print cat.children.all()
+                ordered_cats = []
+                for child in cat.children.all().order_by('order'):
+                    ordered_cats.append(child.id)
+                cat.set_taskcategory_order(ordered_cats)
+                cat.save()
 
         return {'success': True}
     else:
@@ -243,7 +250,7 @@ def tree_branch(branch):
 def get_r_branch(tree):
     branch = tree_branch(tree)
     if tree.children.all():
-        for child in tree.children.all():
+        for child in tree.children.all().order_by('_order'):
             branch['children'].append(
                 get_r_branch(child)
             )
@@ -253,7 +260,7 @@ def get_r_branch(tree):
 class TaskCategoryListViewAlt(TaskCategoryListView):
 
     def get_queryset(self):
-        self.primary_categories = TaskCategory.objects.filter(parent=None)
+        self.primary_categories = TaskCategory.objects.filter(parent=None).order_by("_order")
         return self.primary_categories
 
     def get(self, request, *args, **kwargs):
