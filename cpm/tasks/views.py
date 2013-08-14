@@ -42,8 +42,10 @@ def manage_categories(request):
     if request.method == 'POST':
         #TODO: There's no validation
         formset = FormSet(request.POST)
+        print formset
         formset.save()
-        print request.POST
+        for form in formset:
+            print form.instance.id
 
         return {'success': True}
     else:
@@ -222,81 +224,43 @@ class TaskCategoryListView(generic.ListView):
 
         return context
 
+
 def tree_branch(branch):
-    if branch.parent:
-        parent_id = branch.parent_id
-    else:
-        parent_id = None
     return {
         'id': branch.id,
-        'parent': parent_id,
-        '_order': branch._order,
+        'parent': branch.parent_id,
+        'ascendants': branch.ascendants,
         'title': branch.title,
+        'title_url': urlquote(branch.title),
+        'update_url': branch.get_update_url(),
+        'description': branch.description,
+        'order': branch.order,
+        '_order': branch._order,
         'children': []
     }
 
-def get_r_branch(tree):
-    for child in tree.children.all():
-        yield child
-        for grandchild in get_r_branch(child):
-            yield grandchild
 
-def make_tree_branch(branch):
-    for item in get_r_branch(branch):
-        p = tree_branch(item)
-        if item.parent == branch:
-            parent = (item, p)
-        elif item.parent == parent[0]:
-            parent[1]['children'].append(p)
-        else:
-            tree.append(parent[1])
+def get_r_branch(tree):
+    branch = tree_branch(tree)
+    if tree.children.all():
+        for child in tree.children.all():
+            branch['children'].append(
+                get_r_branch(child)
+            )
+    return branch
 
 
 class TaskCategoryListViewAlt(TaskCategoryListView):
 
     def get_queryset(self):
         self.primary_categories = TaskCategory.objects.filter(parent=None)
-        self.tree_set = []
-        for pcat in self.primary_categories:
-            pcat_obj = tree_branch(pcat)
-
-            children = list(pcat.children.all())
-            for i, child in enumerate(children):
-                while children is not None:
-                    child_obj = tree_branch(child)
-                    children = child.children.all()
-
-                while cchildren is not None:
-
-
-
-
-
-
-
-
-             self.tree_set.append({
+        return self.primary_categories
 
     def get(self, request, *args, **kwargs):
         self.queryset = super(TaskCategoryListViewAlt, self).get_queryset()
         context = {'category_list': []}
         for cat in self.get_queryset():
-            if cat.parent:
-                cat_parent = cat.parent_id
-            else:
-                cat_parent = None
-
-            context['category_list'].append({
-                'id': cat.id,
-                'title': cat.title,
-                'title_url': urlquote(cat.title),
-                'update_url': cat.get_update_url(),
-                'description': cat.description,
-                'parent': cat_parent,
-                'ascendants': cat.ascendants,
-                '_order': cat._order
-                })
-
+            context['category_list'].append(get_r_branch(cat))
         return context
 
 

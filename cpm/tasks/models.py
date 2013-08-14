@@ -93,6 +93,11 @@ class TaskCategory(Slugged):
             ascendants.insert(0, str(parent.id))
             parent = parent.parent
         self.ascendants = ",".join(ascendants)
+        children = self.children.all()
+        if children is not None:
+            for child in children:
+                super(TaskCategory, child).save(*args, **kwargs)
+
         super(TaskCategory, self).save(*args, **kwargs)
 
     def get_update_url(self):

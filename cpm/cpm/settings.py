@@ -158,6 +158,7 @@ if DEBUG:
         from local_settings import *
     except ImportError:
         pass
+else:
     try:
         from production_settings import *
     except ImportError:

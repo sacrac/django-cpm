@@ -13,6 +13,68 @@ var project_form_url;
 var project_url_id = GetURLParameter('project');
 var change_order_url_id = GetURLParameter('change_order');
 
+
+function allDescendants (node, project_data) {
+    var list_item = '<li id="cat_' + 'id=' + node['id'] + '"><a href="' + node['update_url'] + '">' + node['title'] + '</a><ul>';
+    if (project_data[node['id']]) {
+        list_item += project_data[node['id']];
+    }
+    if(node.children) {
+        for (var i = 0; i < node.children.length; i++) {
+            var child = node.children[i];
+            list_item += allDescendants(child, project_data);
+        }
+        list_item += '</ul>';
+    }
+    list_item += '</li>';
+    return list_item
+}
+
+Array.prototype.findInArray =function(propName,value)
+    {
+        var res={};
+        if(propName && value)
+        {
+          for (var i=0; i<this.length; i++)
+          {
+            if(this[i][propName]==value)
+            {
+               res = this[i];
+               break;
+            }
+          }
+        }
+        return res;
+    }
+
+function descendantItemToList(item) {
+    var descendantsList = [];
+    descendantsList.push(item);
+    for (var i = 0; i < item.children.length; i++) {
+        var child = descendantItemToList(item.children[i]);
+        console.log(child);
+        descendantsList.push(child[0]);
+        if (child[1]) {
+            for (var a = 0; a < child.slice(1).length; a++) {
+                descendantsList.push(child.slice(1)[a]);
+            }
+        }
+    }
+    return descendantsList;
+}
+function descendantsToList(list) {
+    var descendantsList = [];
+    for (var i = 0; i < list.length; i++) {
+        var listItem = descendantItemToList(list[i]);
+        for (var a = 0; a < listItem.length; a++) {
+            descendantsList.push(listItem[a]);
+        }
+    }
+    descendantsList = descendantsList.concat();
+    return descendantsList;
+}
+
+
 $(function () {
     if (project_url_id) {
 
@@ -80,20 +142,16 @@ $('#task-list').on("sortstop", function (event, ui) {
     for (var i = 0; i < taskList.length; i++) {
         var task_id = taskList[i].split('_')[1].split('=')[1];
         task_order.push(task_id);
-        console.log(task_order)
     }
 
     var cookie = 'csrfmiddlewaretoken=' + getCookie('csrftoken') + '&';
     var ajaxPost = cookie + 'task_order=' + task_order;
-    console.log(ajaxPost);
     $.ajax({ url: '/cpm/projects/set_task_order/' + project_id + '/',
         type: 'POST',
         data: ajaxPost,
         success: function (data) {
-            console.log('success' + data['success']);
         },
         error: function (data) {
-            console.log(data['error']);
         }
     });
 });
@@ -102,29 +160,34 @@ $('#task-category-list').sortable({
     axis: 'y',
     containment: 'parent',
     delay: 50,
-    distance: 10
+    distance: 10,
+    items: 'li[id^="cat"]'
 });
 
+var devList;
 $('#task-category-list').on("sortstop", function (event, ui) {
 
-    var cats = [];
     var catList = $(this).sortable('toArray');
     var formCount = 0;
+    var jsonList = descendantsToList(project_summary_json);
+    console.log(jsonList);
+    devList = $(this).sortable('widget');
+
+    var cats = [];
+
     for (var i = 0; i < catList.length; i++) {
 
         var cat_id = catList[i].split('_')[1].split('=')[1];
-        console.log(cat_id);
+        var jsonItem = jsonList.findInArray('id', cat_id);
         var cat = {
             'id': cat_id,
-            'title': project_summary_json[cat_id]['title_url'],
+            'title': jsonItem.title_url,
             'order': i
         };
-        console.log(cat.title + ' : ' + cat.order);
         cats.push(cat);
-
-
         formCount += 1;
     }
+
     var cats_str = [];
     for (i = 0; i < cats.length; i++) {
         var cat_keys = Object.keys(cats[i]);
@@ -173,8 +236,8 @@ function getProjectSummary(project_id) {
 
             });
             task_list = task_list.sort(function (a, b) {
-                if (a._order > b._order) return 1;
-                if (a._order < b._order) return -1;
+                if (a.order > b.order) return 1;
+                if (a.order < b.order) return -1;
                 return 0;
             });
             $.each(task_list, function (key_1, value_1) {
@@ -199,11 +262,11 @@ function getProjectSummary(project_id) {
         });
         $('#task-list').html(task_data.join(''));
 
-        $.getJSON('/cpm/tasks/category/', function (data) {
+        $.getJSON('/cpm/tasks/category/alt/', function (data) {
             var list_data = [];
-            project_summary_json = data;
+            project_summary_json = data['category_list'];
             var project_summary_list = [];
-            $.each(data, function (key, value) {
+            $.each(data['category_list'], function (key, value) {
                 project_summary_list.push(value);
             });
             project_summary_list = project_summary_list.sort(function (a, b) {
@@ -211,13 +274,9 @@ function getProjectSummary(project_id) {
                 if (a.order < b.order) return -1;
                 return 0;
             });
+            list1 = project_summary_list;
             $.each(project_summary_list, function (key, value) {
-                if (project_data[value['id']]) {
-                    var list_item = '<li id="cat_' + 'id=' + value['id'] + '"><a href="' + value['update_url'] + '">' + value['title'] + '</a>' + project_data[value['id']] + '</li>';
-                } else {
-                    var list_item = '<li id="cat_' + 'id=' + value['id'] + '"><a href="' + value['update_url'] + '">' + value['title'] + '</a></li>';
-                }
-
+                var list_item = allDescendants(value, project_data);
                 list_data.push(list_item);
             });
             $('#task-category-list').html(list_data.join(''));
@@ -230,6 +289,7 @@ function getProjectSummary(project_id) {
     }
 
 }
+
 
 function getProjectCOSummary(co_id) {
     var JSON_url = '/cpm/changes/tasks/json/' + co_id + '/';
