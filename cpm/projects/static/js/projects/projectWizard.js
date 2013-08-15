@@ -346,15 +346,15 @@ $('#form-wizard').on('submit', '#project-form', function (event) {
         type: "POST",
         data: cookie + $this.serialize(),
         success: function (data) {
-            console.log(data['form_html']);
+            //console.log(data['form_html']);
             if (!(data['success'])) {
-                console.log('Fail');
+                //console.log('Fail');
                 $this.replaceWith(data['form_html']);
             }
             else {
                 project_form_url = data['update_url'];
                 project_id = data['pk'];
-                console.log('PID:  ' + data['pk']);
+                //console.log('PID:  ' + data['pk']);
                 //$('#new-project').find('.success-message').show(1000).hide(5000);
                 showStep(2);
                 $('#step-nav a[href="#new-category"]').parent().removeClass('disabled');
