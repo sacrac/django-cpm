@@ -227,6 +227,8 @@ class TaskCategoryListView(generic.ListView):
                 'update_url': cat.get_update_url(),
                 'description': cat.description,
                 'order': cat.order,
+                'parent': cat.parent_id,
+                'ascendants': cat.ascendants
             }
 
         return context

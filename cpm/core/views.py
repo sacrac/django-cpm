@@ -40,10 +40,3 @@ class AjaxableResponseMixin(object):
         else:
             return response
 
-import urllib
-
-def snippet_list(request):
-    json_str = urllib.URLopener().open('http://127.0.0.1:8010/snippets/')
-    snippets = json.load(json_str)['results']
-    print(snippets)
-    return render(request, 'core/snippet_list.html', {'snippet_list': snippets})

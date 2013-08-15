@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block title %}
+SNIPPTES
+{% endblock title %}
+
+{% block content %}
+    {{ project_summary.username }}
+{% for item in project_summary.category_totals %}
+    {{ item.title }}
+    {% for task in item.task_set %}
+        {{ task }}
+        {% endfor %}
+{% endfor %}
+{% endblock content %}

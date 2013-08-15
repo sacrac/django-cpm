@@ -4,6 +4,12 @@
 {% block extra_css %}
 
     <link rel='stylesheet' href="{% static 'css/font-awesome.min.css' %}">
+
+    <style>
+    .wpl-widget .tasks .well .well {
+        margin: 10px 2px 10px 20px;
+    }
+    </style>
 {% endblock extra_css %}
 
 
@@ -299,15 +305,14 @@
 {% endcomment %}
 {% endblock %}
 
+{% block jquery %}
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+{% endblock jquery %}
 
 {% block extra_js %}
-    {{ block.super }}
-    <script src="{% static 'js/bootstrap-tab.js' %}"></script>
-    <script src="{% static 'js/bootstrap-transition.js' %}"></script>
-
-    <script src="{% static 'js/ajax/jquery-1.2.3.pack.js' %}"></script>
-
-    <script src="{% static 'js/ajax/runonload.js' %}"></script>
+{{ block.super }}
+<script src="{% static 'js/bootstrap-tab.js' %}"></script>
+<script src="{% static 'js/bootstrap-transition.js' %}"></script>
 
     <script type="text/javascript">
 
@@ -315,6 +320,54 @@
         getProjectSummary({{ project.id }});
     });
 
+
+    function allDescendants (node) {
+        var table_head = '<thead><tr><th class="span5">Task</th>'
+                        + '<th class="span3">Expense</th><th class="span3">Markup</th>'
+                        + '</tr></thead>'
+                ;
+        var branch = '<div class="well"><div class="header"><h2>' + node.title + '</h2></div>';
+        var task_set = [];
+        var cat_total_list =  ['Total', node['expense'], node['price'], node['total']];
+        var cat_total = '<div class="footer"><table class="table"><tr><td class="span4">'
+                + cat_total_list.join('</th><th class="span6">$ ')
+                + '</th></tr></table></div>';
+
+        if (node.task_set) {
+            var task_list = node.task_set;
+            $.each(task_list, function (key, value) {
+                var pre_list= [value['title'], '$ ' + value['expense'], '$ ' + value['price']];
+                task_set.push('<tr><td>' + pre_list.join('</td><td>') + '</td></tr>');
+            });
+            branch += '<table class="table table-striped"><thead>' + table_head + '<tbody>' + task_set.join('') + '</tbody></table>'
+        }
+
+        if(node.children) {
+            for (var i = 0; i < node.children.length; i++) {
+                var child = node.children[i];
+                branch += allDescendants(child);
+            }
+        }
+        branch += cat_total + '</div>';
+        return branch;
+    }
+
+    function getProjectSummary(project_id) {
+        var JSON_url = '/cpm/projects/summary/json/' + project_id + '/';
+        $.getJSON(JSON_url, function (data) {
+            var cat_tree = [];
+            $.each(data['project_summary'], function (key, value) {
+                cat_tree.push(allDescendants(value));
+            });
+            $('#task-list').html(cat_tree.join(''));
+
+        });
+    }
+
+
+
+    {% comment %}
+    OLD VERSION for project > category > task model. ^^ updated to handle category's foreign key to itself, recursively
     function getProjectSummary(project_id) {
 
             var JSON_url = '/cpm/projects/json/' + project_id + '/';
@@ -370,6 +423,7 @@
             });
 
         }
+        {% endcomment %}
 
 
     </script>
