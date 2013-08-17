@@ -8,9 +8,12 @@ from django.utils.http import urlquote
 
 from string import punctuation
 from urllib import unquote
+import reversion
+from reversion.models import Revision
 
 from core.utils import import_dotted_path
 from core.models import Slugged, base_concrete_model, DateStamp
+
 
 
 class Project(DateStamp, Slugged):
@@ -74,7 +77,7 @@ class Project(DateStamp, Slugged):
     def get_project_category_totals(self):
         result_dict = {}
         cat_dict = {}
-        all_tasks = self.task_set.all()
+        all_tasks = self.task_set.all().order_by('_order')
         for task in all_tasks:
             try:
                 cat_dict[task.category.id]
@@ -110,6 +113,7 @@ class Project(DateStamp, Slugged):
                 'task_set': task_set_json,
             }
         return result_dict
+reversion.register(Project, follow=['task_set'], exclude=["created, modified"])
 
 
 class ProjectImage(Slugged):
@@ -121,3 +125,11 @@ class ProjectImage(Slugged):
         verbose_name_plural = _("Project Images")
         order_with_respect_to = 'project'
 
+
+'''
+class VersionRating(models.Model):
+    revision = models.OneToOneField(Revision)  # This is required
+    rating = models.PositiveIntegerField()
+
+reversion.add_meta(VersionRating, rating=5)
+'''

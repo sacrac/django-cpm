@@ -15,7 +15,10 @@ var change_order_url_id = GetURLParameter('change_order');
 
 
 function allDescendants (node, project_data) {
-    var list_item = '<li id="cat_' + 'id=' + node['id'] + '"><a href="' + node['update_url'] + '">' + node['title'] + '</a><ul>';
+    var list_item = '<li id="cat_' + 'id=' + node['id'] + '"><a href="'
+        + node['update_url'] + '">'
+        + node['title']
+        + '</a><ul class="nav nav-list">';
     if (project_data[node['id']]) {
         list_item += project_data[node['id']];
     }
@@ -135,7 +138,7 @@ $('#task-list').sortable({
     delay: 50,
     distance: 10
 });
-$('#task-list').on("sortstop", function (event, ui) {
+$('#task-list').on("sortupdate", function (event, ui) {
 
     var task_order = [];
     var taskList = $(this).sortable('toArray');
@@ -150,6 +153,7 @@ $('#task-list').on("sortstop", function (event, ui) {
         type: 'POST',
         data: ajaxPost,
         success: function (data) {
+            getProjectSummary(project_id, 1, 1);
         },
         error: function (data) {
         }
@@ -157,7 +161,6 @@ $('#task-list').on("sortstop", function (event, ui) {
 });
 
 $('#task-category-list').sortable({
-    containment: 'parent',
     connectWith: 'parent',
     delay: 50,
     distance: 10,
@@ -218,6 +221,7 @@ $('#task-category-list').on("sortupdate", function (event, ui) {
         data: ajaxPost,
         success: function (data) {
             console.log('success' + data['success']);
+            getProjectSummary(project_id, 1, 1);
         },
         error: function (data) {
             console.log(data['error']);
@@ -227,7 +231,11 @@ $('#task-category-list').on("sortupdate", function (event, ui) {
 
 var list1;
 var data_list = [];
-function getProjectSummary(project_id) {
+function getProjectSummary(project_id, catsToo, tasksToo) {
+    catsToo = catsToo || 0;
+    console.log(catsToo);
+    tasksToo = tasksToo || 0;
+    console.log(tasksToo);
     if (change_order_url_id) {
         getProjectCOSummary(change_order_url_id);
 
@@ -247,8 +255,8 @@ function getProjectSummary(project_id) {
 
             });
             task_list = task_list.sort(function (a, b) {
-                if (a.order > b.order) return 1;
-                if (a.order < b.order) return -1;
+                if (a._order > b._order) return 1;
+                if (a._order < b._order) return -1;
                 return 0;
             });
             $.each(task_list, function (key_1, value_1) {
@@ -271,10 +279,14 @@ function getProjectSummary(project_id) {
             project_data[key] = '<ul class="nav nav-list">' + list1_data_simple.join('') + '</ul>';
             i++;
         });
-        $('#task-list').html(task_data.join(''));
+        if (tasksToo != 1) {
+            $('#task-list').html(task_data.join(''));
+            console.log('Changing Tasks Too!')
+        }
 
         $.getJSON('/cpm/tasks/category/alt/', function (data) {
             var list_data = [];
+            var cat_list_data = [];
             project_summary_json = data['category_list'];
             var project_summary_list = [];
             $.each(data['category_list'], function (key, value) {
@@ -288,14 +300,32 @@ function getProjectSummary(project_id) {
             list1 = project_summary_list;
             $.each(project_summary_list, function (key, value) {
                 var list_item = allDescendants(value, project_data);
+                var cat_list_item = allDescendants(value, []);
                 list_data.push(list_item);
+                cat_list_data.push(cat_list_item);
             });
-            $('#task-category-list').html(list_data.join(''));
+            if (catsToo != 1) {
+                $('#task-category-list').html(cat_list_data.join(''));
+                console.log('Changing Cats Too!')
+            }
             $('#project-summary').html(list_data.join(''));
 
 
-        })
-    });
+        });
+        var versions = [];
+        $.each(data['versions'], function(key, value) {
+            var instance = $.parseJSON(value.instance);
+            var created  = value.created.split('T');
+            var version = value.version;
+            console.log(instance);
+            console.log(created);
+            versions.push(version + '"><a href="#">Date: ' + created[0] + ' Time: ' + created[1] );
+        });
+
+        versions = '<li id="version-' + versions.join('</a></li><li id="version-');
+        $('#version-list').html(versions);
+
+    });//project summary json
 
     }
 
@@ -328,7 +358,6 @@ function getProjectCOSummary(co_id) {
 $('#form-wizard').on('submit', '#project-form', function (event) {
     event.preventDefault();
     var $this = $(this);
-    console.log($this.serialize());
     var project_form_title = $this.find('#id_title').val();
     var cookie = 'csrfmiddlewaretoken=' + getCookie('csrftoken') + '&';
 
@@ -383,7 +412,6 @@ $('#form-wizard').on('submit', '#task-category-form', function (event) {
         this_url = $(this).attr('action');
     }
 
-    console.log(cookie + $(this).serialize());
     $.ajax({
         url: this_url,
         type: "POST",
@@ -432,7 +460,6 @@ $('#form-wizard').on('submit', '#task-form', function (event) {
         task_url = $(this).attr('action');
     }
 
-    console.log(cookie + $(this).serialize() + task_form_changes);
     $.ajax({
         url: task_url,
         type: "POST",

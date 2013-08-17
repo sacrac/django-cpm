@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from core.models import Slugged, base_concrete_model, DateStamp
 
 from projects.models import Project
+import reversion
 
 
 class Task(Slugged):
@@ -52,11 +53,9 @@ class Task(Slugged):
         all_categories = TaskCategory.objects.all()
         all_tasks = Task.objects.filter(project=self.project)
         all_categories = all_categories.order_by('order')
-        print all_categories
         for cat in all_categories:
             cat_tasks = all_tasks.filter(category=cat)
             if cat_tasks:
-                print cat.title
                 cat_exp_total = sum(cat_tasks.values_list('expense', flat=True))
                 cat_price_total = sum(cat_tasks.values_list('price', flat=True))
                 result_dict[cat.slug] = {
@@ -71,6 +70,7 @@ class Task(Slugged):
 
     due_date_since.short_description = _("Late by")
     due_date_until.short_description = _("Due in")
+reversion.register(Task)
 
 
 class TaskCategory(Slugged):
@@ -80,25 +80,38 @@ class TaskCategory(Slugged):
     description = models.TextField(blank=True)
 
     class Meta:
-        ordering = ('ascendants',)
+        ordering = ('_order', 'order', 'ascendants')
         order_with_respect_to = 'parent'
 
     def save(self, *args, **kwargs):
-        if self.order is None:
-            if not TaskCategory.objects.all():
-                self.order = 0
+
+        if self.parent is None:
+            self._order = self.order
+
+        super(TaskCategory, self).save(*args, **kwargs)
+        self.update_descendants()
+
+    def update_descendants(self):
+        current_ascendants = self.ascendants
+        print 'current: ' + str(current_ascendants)
+
         ascendants = [str(self.id)]
         parent = self.parent
         while parent is not None:
             ascendants.insert(0, str(parent.id))
             parent = parent.parent
-        self.ascendants = ",".join(ascendants)
-        children = self.children.all()
-        if children is not None:
-            for child in children:
-                super(TaskCategory, child).save(*args, **kwargs)
 
-        super(TaskCategory, self).save(*args, **kwargs)
+        ascendants = ",".join(ascendants)
+        self.ascendants = ascendants
+
+        if ascendants != current_ascendants or ascendants is None:
+            super(TaskCategory, self).save(update_fields=['ascendants'])
+            print 'new    : ' + str(self.ascendants)
+
+        children = self.children.all()
+        if children:
+            for child in children:
+                child.update_descendants()
 
     def get_update_url(self):
         return reverse('tasks:task-category-update', kwargs={'pk': self.pk})

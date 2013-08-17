@@ -45,6 +45,7 @@ def manage_categories(request):
         print formset
         formset.save()
         for form in formset:
+            print form.instance
             cat = TaskCategory.objects.get(id=form.instance.id)
             if cat.children.all():
                 print cat.children.all()
@@ -52,7 +53,6 @@ def manage_categories(request):
                 for child in cat.children.all().order_by('order'):
                     ordered_cats.append(child.id)
                 cat.set_taskcategory_order(ordered_cats)
-                cat.save()
 
         return {'success': True}
     else:

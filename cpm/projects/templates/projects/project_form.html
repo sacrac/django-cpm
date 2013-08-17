@@ -25,15 +25,24 @@
                     </li>
                     <li class="disabled">
                         <a href="#save">Save and add Images</a></li>
+                    <li class="dropdown">
+                        <a data-target="#" data-toggle="dropdown">Version History</a>
+                        <ul id="version-list" class="dropdown-menu"></ul>
+                    </li>
                 </ul>
             </div>
+        <div class="row">
+
+    <div class="span7">
+
+
         <div class="row">
             <div class="tab-content">
 
 
                 <div class="tab-pane active" id="new-project">
 
-                    <div class="span8">
+                    <div class="span7">
 
 
                         <div class="instructions">
@@ -52,15 +61,10 @@
                         </div>
                         {% crispy form %}
                     </div>
-                    <div class="span4">
-                        <h3>Project Summary</h3>
-                        <ul class="nav nav-list" id="project-summary">
-                        </ul>
-                    </div>
                 </div>
 
                 <div class="tab-pane" id="new-task">
-                    <div class="span8">
+                    <div class="span4">
 
                         <div class="instructions">
                             <p class="lead">
@@ -77,14 +81,15 @@
                         </div>
                         {% crispy task_form %}
                     </div>
-                    <div class="span4">
+                    <div class="span3">
                         <h3>Tasks</h3>
                         <ul class="nav nav-list" id="task-list">
                         </ul>
                     </div>
                 </div>
                 <div class="tab-pane" id="new-category">
-                    <div class="span8">
+
+                    <div class="span4">
                         <div class="instructions">
                             <p class="lead">
                                 Step 3: Modify or Create Categories
@@ -102,7 +107,7 @@
                         </div>
                         {% crispy task_category_form %}
                     </div>
-                    <div class="span4">
+                    <div class="span3">
                         <h3>Task Categories</h3>
                         <ul class="nav nav-list" id="task-category-list">
                         </ul>
@@ -130,8 +135,17 @@
                         </div>
 
 
+                    </div>
             </div>
 
+        </div>
+    </div>
+    </div>
+    <div class="span5">
+        <div class="span4">
+            <h3>Project Summary</h3>
+            <ul class="nav nav-list" id="project-summary">
+            </ul>
         </div>
     </div>
 

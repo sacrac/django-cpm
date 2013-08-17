@@ -24,7 +24,7 @@ class ProjectForm(forms.ModelForm):
         self.helper.help_text_inline = True
         #self.helper.form_tag = False
         self.helper.form_id = 'project-form'
-        self.helper.form_class = 'form-horizontal'
+        #self.helper.form_class = 'form-horizontal'
         self.helper.form_action = 'projects:project-form'
         self.helper.layout = Layout(
             Div(
