@@ -9,17 +9,17 @@
         margin: 10px 2px 30px 20px;
     }
     .wpl-widget .tasks .well .footer table {
-        color: #eee;
+        color: #f7f7f7;
     }
     .wpl-widget .tasks .well .well .footer table {
-        color: #ddd;
+        color: #ececec;
     }
-    .wpl-widget .tasks .collapse {
-        margin-bottom: 27px;
+    .wpl-widget .header .toggle-table {
+        padding: 12px 2px;
     }
     .wpl-widget .header .toggle-table i {
         font-size: 25px;
-        color: #616161;
+        color: #f7f7f7;
     }
     .wpl-widget .well .well .header h2 {
         line-height: 50px;
@@ -344,9 +344,10 @@
 
     function allDescendants (node) {
         var branch = '<div class="well"><div class="header">'
-                + '<h2>' + node.title + '</h2>'
                 + '<a class="toggle-table pull-right" data-target="#"><i class="icon-collapse-alt"></i></a>'
-                + '</div>';
+                + '<h2>' + node.title + '</h2>'
+                + '</div>'
+                ;
         var task_set = [];
 
 
@@ -384,7 +385,9 @@
                 task_set.push('<tr><td>' + pre_list.join('</td><td>') + '</td></tr>');
             });
             branch += '<div id="categorytable-' + node.id + '" class="collapse in">'
-                    + '<div class="content"><p>' + node.description + '</p></div>'
+                    + '<div class="content">'
+                    + '<p>' + node.description +'</p>'
+                    + '</div>'
                     + '<table class="table table-striped"><thead>'
                     + table_head + '<tbody>' + task_set.join('') + '</tbody></table></div>'
         }

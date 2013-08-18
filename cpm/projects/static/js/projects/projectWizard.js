@@ -15,12 +15,14 @@ var change_order_url_id = GetURLParameter('change_order');
 
 
 function allDescendants (node, project_data) {
-    var list_item = '<li id="cat_' + 'id=' + node['id'] + '"><a href="'
-        + node['update_url'] + '">'
+    var list_item = '<li id="cat_' + 'id=' + node['id'] + '">'
+        + '<a href="' + node['update_url'] + '">'
         + node['title']
         + '</a><ul class="nav nav-list">';
+
     if (project_data[node['id']]) {
-        list_item += project_data[node['id']];
+        list_item += project_data[node['id']] ;
+
     }
     if(node.children) {
         for (var i = 0; i < node.children.length; i++) {
@@ -85,8 +87,6 @@ $(function () {
         $('#step-nav a[href="#new-task"]').parent().removeClass('disabled');
         project_form_url = '/cpm/update/' + project_url_id + '/';
         getTaskForm(task_form_url);
-        // TODO: WTF is this? Leaving it incase
-        // project_id = project_form_url.split('/').slice(-2)[0];
 
         if (change_order_url_id) {
             getProjectCOSummary(change_order_url_id);
@@ -245,6 +245,12 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
     var task_data = [];
     //var task_list = [];
     $.getJSON(JSON_url, function (data) {
+        $('.page-header h1').text(data.title);
+        $('#new-project .instructions .lead').text('Editing '
+            + data.title
+            + ' for '
+            + data.username
+        );
         var i = 0;
         $.each(data['category_totals'], function (key, value) {
             var task_list = [];
@@ -276,7 +282,13 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
                 list1_data_simple.push(list_item_simple);
             });
             task_data.push(list1_data.join(''));
-            project_data[key] = '<ul class="nav nav-list">' + list1_data_simple.join('') + '</ul>';
+            project_data[key] = '<ul class="nav nav-list">' + list1_data_simple.join('')
+                // Spacing between label and $
+                + '<li class="cat-expense">Expense: &nbsp;$' + value.expense + '</li>'
+                + '<li class="cat-price">Markup: &nbsp;&nbsp;&nbsp;$' + value.price + '</li>'
+                + '<li class="cat-total">Total: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$' + value.total + '</li>'
+            + '</ul>'
+            ;
             i++;
         });
         if (tasksToo != 1) {
@@ -324,12 +336,33 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
 
         versions = '<li id="version-' + versions.join('</a></li><li id="version-');
         $('#version-list').html(versions);
+        $('#project-summary-fields').html(
+                '<a class="toggle-table pull-right" data-target="#"><i class="icon-collapse-alt"></i></a>'
+                + '<div class="collapse">'
+                + '<h4>'+ data.title + '</h4>'
+                + '<h5>' + data.username + '</h5>'
+                + '<ul class="unstyled">'
+                    + '<li>Expense: $' + data.expense + '</li>'
+                    + '<li>Markup: $' + data.price + '</li>'
+                    + '<li>Total: $' + data.total + '</li>'
+                + '</ul>'
+                + '<p>' + data.description + '</p>'
+            );
 
     });//project summary json
 
     }
 
 }
+$('#project-summary').parent().on('click', '.toggle-table', function(e) {
+    if ($(this).find('i').hasClass('icon-collapse-alt')) {
+        $(this).parent().parent().find('.collapse').collapse('hide');
+        $(this).parent().parent().find('i').removeClass('icon-collapse-alt icon-expand-alt').addClass('icon-expand-alt')
+    } else {
+        $(this).parent().parent().find('.collapse').collapse('show');
+        $(this).parent().parent().find('i').removeClass('icon-collapse-alt icon-expand-alt').addClass('icon-collapse-alt')
+    }
+});
 
 
 function getProjectCOSummary(co_id) {
@@ -339,16 +372,13 @@ function getProjectCOSummary(co_id) {
     $.getJSON(JSON_url, function (data) {
         var list_data = [];
         $.each(data, function (key, value) {
-            console.log(key, value);
             var list_item = '<li id="task_' + 'id=' + value['id'] + '"><a href="' + value['update_url'] + '">'
                 + value['title'] + '</a>'
                 + '</li>';
 
             list_data.push(list_item);
-            console.log(list_item);
         });
         task_data.push(list_data.join(''));
-        console.log(task_data);
         $('#task-list').html(task_data.join(''));
     });
 }

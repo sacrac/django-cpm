@@ -42,15 +42,14 @@ def manage_categories(request):
     if request.method == 'POST':
         #TODO: There's no validation
         formset = FormSet(request.POST)
-        print formset
         formset.save()
         for form in formset:
-            print form.instance
             cat = TaskCategory.objects.get(id=form.instance.id)
-            if cat.children.all():
-                print cat.children.all()
+            all_cats = cat.children.all()
+            if all_cats:
+                print all_cats
                 ordered_cats = []
-                for child in cat.children.all().order_by('order'):
+                for child in all_cats.order_by('order'):
                     ordered_cats.append(child.id)
                 cat.set_taskcategory_order(ordered_cats)
 
@@ -145,7 +144,7 @@ class TaskFormView(generic.CreateView):
         new_task.save()
         if changes:
             new_task.changes.add(changes)
-            print(new_task.changes.all())
+            print 'CHANGE ORDER INCLUDED'
         else:
             print 'NO CHANGE ORDER'
         update_url = form.instance.get_update_url()
@@ -298,7 +297,6 @@ class TaskCategoryFormView(generic.CreateView):
 
     def form_valid(self, form):
         #TODO: Form processing needed
-        print form
         form.save()
         update_url = form.instance.get_update_url()
         form_html = render_crispy_form(self.form_class())
@@ -307,7 +305,6 @@ class TaskCategoryFormView(generic.CreateView):
         return context
 
     def form_invalid(self, form):
-        print form
         form_html = render_crispy_form(form)
         return {'success': False, 'form_html': form_html}
 

@@ -44,7 +44,7 @@ class ProjectDetailJSONView(generic.DetailView):
 
     def get(self, request, *args, **kwargs):
         self.object = super(ProjectDetailJSONView, self).get_object()
-        version_list = reversion.get_for_object(self.object)
+        version_list = reversion.get_for_object(self.object)[:10]
         versions = []
         for version in version_list:
             instance_data = version.serialized_data.strip('[]')
@@ -69,7 +69,11 @@ class ProjectDetailJSONView(generic.DetailView):
             'absolute_url': self.object.get_absolute_url(),
             'update_url': self.object.get_update_url(),
             'category_totals': self.object.get_project_category_totals(),
-            'versions': versions
+            'versions': versions,
+            'price': self.object.get_project_price(),
+            'expense': self.object.get_project_expense(),
+            'total': self.object.get_project_total()
+
         }
 
         return context

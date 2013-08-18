@@ -66,12 +66,19 @@
 
                 <form action="{% url 'messages:message-form' %}" method="post" class="animated fadeInUp"
                       id="message-form">
-                    <input class="span6" id="id_message" name="message" placeholder="New message..">
-                    <input type="submit" value="Send" id="submit" class="btn btn-primary span2">
-                    <button class="btn-info btn" id="refresh-messages" onclick="getMessages()">
-                        <i class="icon icon-refresh"></i>
-                    </button>
+                <div class="controls">
+                    <div class="input-prepend input-append">
+                        <span class="add-on info"><i class="icon-envelope"></i></span>
+                        <input class="span7" id="id_message" name="message" placeholder="New message..">
+                        <button type="submit" id="submit" class="btn btn-primary"><i class="icon-share-alt"></i></button>
+                    </div>
+                </div>
                     {% if user.is_superuser %}
+                        <!--
+                        <button class="btn-info btn" id="refresh-messages" onclick="getMessages()">
+                            <i class="icon icon-refresh"></i>
+                        </button>
+                        -->
                         <input id="id_recipient" name="recipient" value="1" type="hidden">
                     {% else %}
                         <input id="id_recipient" name="recipient" value="1" type="hidden">
@@ -83,7 +90,6 @@
     </div>
     {% endif %}
 
-    {% if user == client or user.is_staff %}
 
     <div class="wpl-widget projects">
         <div class="well pad-0">
@@ -97,15 +103,30 @@
                 <tbody>
                 {% for project in project_list %}
                     <tr>
-                        <td class="span5"><a class="label label-important"
-                                href="{% url 'projects:project-detail' project.id %}">{{ project.title }}</a></td>
-                        <td class="progress span6">
-                            <div class="bar" style="width: {% widthratio project.get_progress 1 100 %}%;"></div>
+                        <td class="span5">
+                            <a class="btn btn-info" href="{% url 'projects:project-detail' project.id %}">
+                                <i class="icon-zoom-in"></i>
+                                &nbsp;&nbsp;
+                                {{ project.title }}
+                            </a>
+                        </td>
+                        <td class="span6">
+                            <div class="progress">
+                                <div class="bar" style="width: {% widthratio project.get_progress 1 100 %}%;">
+                                    {% if project.get_progress > .1 %}
+                                    {% widthratio project.get_progress 1 100 %}% complete
+                                    {% endif %}
+                                </div>
+                            </div>
                         </td>
                         <td class="span1">
                             {% if user.is_superuser %}
                                 <a class="btn btn-mini btn-info"
                                    href="{% url 'updates:update-project-form' project.user_id  %}">Update</a>
+                                {% else %}
+                            <a class="btn btn-link" href="{% url 'projects:project-detail' project.id %}">
+                               <i class="icon-external-link"></i>
+                            </a>
                             {% endif %}
                         </td>
                     </tr>
@@ -116,7 +137,6 @@
         </div>
     </div>
 
-    {% endif %}
 
     <div class="row">
 
@@ -416,7 +436,36 @@
 
 {% block extra_css %}
     <style>
+    .wpl-widget.messages input {
+        line-height: 23px;
+    }
+    .wpl-widget.messages .controls .btn {
+        height: 28px;
+    }
 
+        .wpl-widget.projects .table .btn-link {
+            font-size: 18px;
+            padding: 3px;
+        }
+        .wpl-widget.projects .table .btn-link:hover {
+            font-size: 24px;
+            padding: 0;
+            text-decoration: none;
+        }
+    .wpl-widget.projects .table .btn-info i {
+        font-size: 14px;
+        padding: 8px;
+    }
+    .wpl-widget.projects .table .btn-info:hover i {
+        font-size: 16px;
+        padding: 0 7px;
+    }
+        .wpl-widget .project-detail-link:hover {
+            background-color: #f4bcb6;
+        }
+        wpl-widget .progress {
+            margin-bottom: 0;
+        }
         .wpl-widget .well {
             position: relative;
         }

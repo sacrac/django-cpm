@@ -1,6 +1,12 @@
 __author__ = 'wpl'
 
 import urllib, json
+from django.conf import settings
+
+debug = False
+if settings.DEBUG:
+    debug = True
+
 
 
 def unique_items(list):
@@ -58,7 +64,6 @@ def get_branch_by_id(tree, id):
     """
     for branch in tree:
         if branch['id'] == id:
-            print branch['id']
             return branch
         elif branch['children']:
             branch = get_branch_by_id(branch['children'], id)
@@ -72,6 +77,7 @@ def get_used_branch_ids(p_tree):
     returns list of branch ids and all of their ancestor ids, filters redundancies
     *NOTE: this is depending on the 'ascendants' method of task categories. If the 'ascendants' method isnt updating
     correctly, it is likely the cause of any issues with project summaries
+    OK
     """
     used_object_ids = []
     for branch in p_tree:
@@ -89,9 +95,10 @@ def create_used_item_list(tree, used_branch_ids):
     """
     branches = []
     for id in used_branch_ids:
-        print id
         branch = get_branch_by_id(tree, id)
         branches.append(branch)
+        if debug:
+            print branch['id']
     for branch in branches:
         branch['children'] = []
     return branches
@@ -119,17 +126,32 @@ def add_info_to_branch(tree, id, item):
     for branch in tree:
         if branch['id'] == id:
             target = branch
+            if debug:
+                print 'Found target, %d in first level' % id
+            break
         elif branch['children']:
+            if debug:
+                print 'searching children for %d' % id
             target = get_branch_by_id(branch['children'], id)
+            if target:
+                break
     if target:
+        if debug:
+            print 'Appending %d to %d' % (item['id'], target['id'])
+            print [child['id'] for child in target['children']]
         target['children'].append(item)
         target['price'] += item['price']
         target['expense'] += item['expense']
         target['total'] += item['total']
+        if debug:
+            print [child['id'] for child in target['children']]
 
 
 def sort_tree(tree):
     tree = sorted(tree, key=lambda x: x['_order'])
+    if debug:
+        order = [(branch['id'], branch['_order']) for branch in tree]
+        print order
     for branch in tree:
         if branch['children']:
             branch['children'] = sort_tree(branch['children'])
@@ -142,17 +164,39 @@ def create_used_item_tree(used_item_list):
     branches are modified with "add_info_to_branch" function
     """
     used_item_tree = []
+    if debug:
+        print [p_item['id'] for p_item in used_item_list]
+        print [p_item['id'] for p_item in used_item_tree]
     for item in used_item_list[:]:
         if item['parent'] is None:
-            print 'primary %d' % item['id']
+
+            if debug:
+                print 'primary %d' % item['id']
+
             used_item_tree.append(item)
             used_item_list.remove(item)
+
     while len(used_item_list) is not 0:
         for item in used_item_list[:]:
             parent = get_dict_in_list('id', item['parent'], used_item_list)
+
+            if debug:
+                print '1. id: %d, parent: %d' % (item['id'], item['parent'])
+                print [p_item['id'] for p_item in used_item_tree]
+
             if not parent:
+
+                if debug:
+                    print '2. %d' % item['id']
+                    print [p_item['id'] for p_item in used_item_list]
+
                 add_info_to_branch(used_item_tree, item['parent'], item)
                 used_item_list.remove(item)
+
+                if debug:
+                    print '3. %d' % item['id']
+                    print [p_item['id'] for p_item in used_item_list]
+
     return used_item_tree
 
 
@@ -166,5 +210,6 @@ def create_project_summary_tree(c_url='http://127.0.0.1:8000/cpm/tasks/category/
     used_item_list = create_used_item_list(c, used_branch_ids)
     modify_used_item_list(p, used_item_list)
     used_item_tree = create_used_item_tree(used_item_list)
+    used_item_tree = sort_tree(used_item_tree)
     return used_item_tree
 

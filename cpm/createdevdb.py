@@ -19,11 +19,11 @@ def create_user(i):
 
 def create_project(i, user_id):
     user = User.objects.get(id=user_id)
-    return Project.objects.create(title="Test Project %d" % i, user=user, description=TEXT_BLOCK[:30])
+    return Project.objects.create(title="Test Project %d" % i, user=user, description=TEXT_BLOCK[:200])
 
 
-def create_cat(i):
-    return TaskCategory.objects.create(title="Test Category %d" % i, description=TEXT_BLOCK[:100])
+def create_cat(i, parent=None):
+    return TaskCategory.objects.create(title="Test Category %d" % i, description=TEXT_BLOCK[:90], parent=parent)
 
 
 def create_task(i, cat_id, project_id):
@@ -54,8 +54,38 @@ def main():
     t_count = int(sys.argv[4])
 
     cats_count = int(TaskCategory.objects.count())
+    i = 0
+    cat_parent = None
     for ic in range(0, c_count):
-        create_cat(cats_count + ic)
+        new_cat = create_cat(cats_count + ic, cat_parent)
+        if i == 2:
+            cat_parent = new_cat
+        elif i == 4:
+            cat_parent = new_cat
+        elif i == 7:
+            cat_parent = new_cat
+        elif i == 8:
+            cat_parent = new_cat.parent.parent.parent
+        elif i == 10:
+            cat_parent = new_cat
+        elif i == 12:
+            cat_parent = new_cat
+        elif i == 15:
+            cat_parent = new_cat.parent.parent
+        elif i == 17:
+            cat_parent = new_cat
+        elif i == 20:
+            cat_parent = None
+        elif i == 22:
+            cat_parent = new_cat
+        elif i == 25:
+            cat_parent = new_cat.parent.parent
+        elif i == 27:
+            cat_parent = new_cat
+        elif i == 30:
+            cat_parent = None
+        i += 1
+
 
     all_cats = TaskCategory.objects.all()
 

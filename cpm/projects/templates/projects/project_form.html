@@ -115,7 +115,7 @@
                 </div>
 
                 <div class="tab-pane" id="save">
-                    <div class="span8">
+                    <div class="span7">
 
                         <div class="instructions">
                             <p class="lead">
@@ -142,11 +142,10 @@
     </div>
     </div>
     <div class="span5">
-        <div class="span4">
             <h3>Project Summary</h3>
+            <div id="project-summary-fields"></div>
             <ul class="nav nav-list" id="project-summary">
             </ul>
-        </div>
     </div>
 
 {% endblock %}
@@ -154,6 +153,7 @@
 
 {% block extra_js %}
     <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <script src="{% static 'js/bootstrap-collapse.js' %}"></script>
     <script src="{% static 'js/projects/projectWizard.js' %}"></script>
 
     <script type="text/javascript">

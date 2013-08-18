@@ -19,6 +19,14 @@
     };
   </script>
     <link rel='stylesheet' href="{% static 'css/font-awesome.min.css' %}">
+<style>
+   .navbar .nav > li > a {
+        padding: 10px 15px;
+    }
+    .navbar-inner {
+        min-height: 40px;
+    }
+</style>
 {% block extra_css %}{% endblock extra_css %}
 
 
@@ -93,13 +101,19 @@
 
     <header>
     <div class="container">
-        <div class="page-header">
-            <h1>{% block title %}{% endblock title %}</h1>
+        {% block intro %}{% endblock intro %}
+        <div class="row">
+            <div class="span7">
+                <!--div class="page-header"-->
+                    <h1>{% block title %}{% endblock title %}</h1>
+                <!--/div-->
+            </div>
+            <div class="span5">
+                <ul class="nav nav-tabs sub-menu pull-right">
+                    {% block sub_menu %}{% endblock sub_menu %}
+                </ul>
+            </div>
         </div>
-            {% block intro %}{% endblock intro %}
-        <ul class="nav nav-tabs sub-menu">
-            {% block sub_menu %}{% endblock sub_menu %}
-        </ul>
     </div>
     </header>
 
