@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% for version in revision.version_set.all %}
+<p>{{ version.serialized_data }}</p>
+{% endfor %}
+
+{% endblock content %}

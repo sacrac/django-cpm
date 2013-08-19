@@ -13,6 +13,11 @@ var project_form_url;
 var project_url_id = GetURLParameter('project');
 var change_order_url_id = GetURLParameter('change_order');
 
+$(window).scroll(function(){
+    $(".form-fixed").css("top",Math.max(40,200-$(this).scrollTop()));
+    $("#step-nav").css("top",Math.max(0,160-$(this).scrollTop()));
+});
+
 
 function allDescendants (node, project_data) {
     var list_item = '<li id="cat_' + 'id=' + node['id'] + '">'
@@ -245,12 +250,6 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
     var task_data = [];
     //var task_list = [];
     $.getJSON(JSON_url, function (data) {
-        $('.page-header h1').text(data.title);
-        $('#new-project .instructions .lead').text('Editing '
-            + data.title
-            + ' for '
-            + data.username
-        );
         var i = 0;
         $.each(data['category_totals'], function (key, value) {
             var task_list = [];
@@ -266,16 +265,15 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
                 return 0;
             });
             $.each(task_list, function (key_1, value_1) {
-                //var list2_data = [];
-                //$.each(value_1, function (key_2, value_2) {
-                    // adds task methods to list
-                //    list2_data.push(key_2 + ' : ' + value_2 + '</li>');
-                //});
                 var list_item = '<li id="task_' + 'id=' + value_1['id'] + '"><a href="' + value_1['update_url'] + '">'
                     + value_1['title'] + '</a>'
                     + value_1['description']
-                    //+ <ul>' + list2_data.join('') + '</ul>'
-                    + '</li>';
+                    + '<ul class="unstyled">'
+                    + '<li class="cat-expense">Expense: &nbsp;$' + value_1.expense + '</li>'
+                    + '<li class="cat-price">Markup: &nbsp;&nbsp;&nbsp;$' + value_1.price + '</li>'
+                    + '</ul>'
+                    + '</li>'
+
                 var list_item_simple = '<li class="disabled" id="task_' + 'id=' + value_1['id'] + '"><a href="' + value_1['update_url'] + '">' + value_1['title'] + '</a></li>';
 
                 list1_data.push(list_item);
@@ -657,3 +655,4 @@ $('#save-project').on('click', function(e) {
     e.preventDefault();
     window.location = '/cpm/images/' + project_id + '/';
 });
+

@@ -3,6 +3,7 @@ from django import forms
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import *
+from crispy_forms.bootstrap import PrependedText
 from django.forms.extras.widgets import SelectDateWidget
 
 from .models import Task, TaskCategory
@@ -11,11 +12,11 @@ from .models import Task, TaskCategory
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title', 'slug', 'description', 'projected_completion_date', 'project', 'expense', 'price',
+        fields = ['title', 'slug', 'description', 'project', 'expense', 'price',
                   'category']
         widgets = {
             'slug': forms.HiddenInput(),
-            'projected_completion_date': SelectDateWidget(),
+            #'projected_completion_date': SelectDateWidget(),
             'completion_date': forms.HiddenInput(),
             'project': forms.HiddenInput(),
             'changes': forms.HiddenInput(),
@@ -27,20 +28,23 @@ class TaskForm(forms.ModelForm):
         self.helper.help_text_inline = True
         #self.helper.form_tag = False
         self.helper.form_id = 'task-form'
-        #self.helper.form_class = 'form-horizontal'
+        #self.helper.form_class = 'span4'
         #self.helper.form_action = 'tasks:task-form'
         self.helper.layout = Layout(
             Div(
                 Div(
                     'slug',
-                    'title',
-                    'category',
-                    'expense',
-                    'price',
-                    'projected_completion_date',
+                    Field('title', css_class="input-block-level"),
+                    Field('category', css_class="input-block-level"),
+                    Div(
+                        Field('expense', wrapper_class='span2', css_class='input-small'),
+                        Field('price', wrapper_class='span2', css_class='input-small'),
+                        css_class='controls controls-row row',
+                    )
+                    #'projected_completion_date',
                 ),
                 Div(
-                    Field('description'),
+                    Field('description', rows=3, css_class='input-block-level'),
                 ),
                 Div(
                     'project',
@@ -69,15 +73,15 @@ class TaskCategoryForm(forms.ModelForm):
         self.helper.help_text_inline = True
         #self.helper.form_tag = False
         self.helper.form_id = 'task-category-form'
-        #self.helper.form_class = 'form-horizontal'
+        #self.helper.form_class = 'span4'
         #self.helper.form_action = 'tasks:task-category-form'
         self.helper.layout = Layout(
             Div(
                 Div(
-                    Field('title'),
-                    'description',
-                    'order',
-                    'parent'
+                    Field('title', css_class="input-block-level"),
+                    Field('parent', css_class="input-block-level"),
+                    Field('description', rows=3, css_class='input-block-level'),
+                    'order'
                 ),
                 Div(
                     FormActions(

@@ -27,6 +27,18 @@ from .helpers import create_project_summary_tree
 
 
 
+class VersionDetailView(generic.DetailView):
+    model = reversion.models.Revision
+
+    @json_view
+    def dispatch(self, *args, **kwargs):
+        return super(VersionDetailView, self).dispatch(*args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        self.object = super(VersionDetailView, self).get_object()
+        context = [version.serialized_data for version in self.object.version_set.all()]
+
+        return context
 
 @json_view
 def project_proposal(request, project_id):
@@ -47,11 +59,10 @@ class ProjectDetailJSONView(generic.DetailView):
         version_list = reversion.get_for_object(self.object)[:10]
         versions = []
         for version in version_list:
-            instance_data = version.serialized_data.strip('[]')
+            #instance_data = version.serialized_data.strip('[]')
             timestamp = str(version.revision.date_created.isoformat()[:-13])
             versions.append({
                 'version': version.pk,
-                'instance': instance_data,
                 'created': timestamp
             })
 
@@ -81,8 +92,6 @@ class ProjectDetailJSONView(generic.DetailView):
 
 class ProjectDetailView(generic.DetailView):
     model = Project
-
-
 
 
 def project_list_super(request, user=None, year=None, month=None):

@@ -15,7 +15,7 @@ class ProjectForm(forms.ModelForm):
         widgets = {
             'slug': forms.HiddenInput(),
             'completion': forms.HiddenInput(),
-            'start_time': SelectDateWidget(),
+            'start_time': forms.HiddenInput(),
         }
 
     def __init__(self, *args, **kwargs):

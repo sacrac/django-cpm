@@ -2,7 +2,6 @@
 {% load crispy_forms_tags staticfiles %}
 
 
-{% block title %}New Project{% endblock title %}
 
 {% block content %}
 
@@ -12,7 +11,7 @@
 
                 <h2 id='project-title'>Project Wizard</h2>
             </div>
-            <div class="">
+            <div class="container">
                 <ul class="nav nav-tabs" id="step-nav">
                     <li class="active">
                         <a href="#new-project">Project</a>
@@ -42,44 +41,53 @@
 
                 <div class="tab-pane active" id="new-project">
 
+                    <div class="form-fixed">
                     <div class="span7">
 
 
                         <div class="instructions">
                             <p class="lead">
-                                Step 1: Create New Project
+                                Step 1: Create Project
                             </p>
 
+                            <!--
                             <p>
                                 Fill out the fields below to create a new project.
                                 Next you will add categories and tasks to this projects
                             </p>
+                            -->
 
                             <p class="success-message">
                                 New Project added!
                             </p>
                         </div>
                         {% crispy form %}
+                        </div>
                     </div>
                 </div>
 
                 <div class="tab-pane" id="new-task">
                     <div class="span4">
+                        <div class="form-fixed row">
+                            <div class="span4">
+                                <div class="instructions">
+                                    <p class="lead">
+                                        Step 2: Create Tasks
+                                    </p>
 
-                        <div class="instructions">
-                            <p class="lead">
-                                Step 2: Create Tasks
-                            </p>
+                                    <!--
+                                    <p>
+                                        Fill out the fields below to add tasks to this project.
+                                    </p>
+                                    -->
 
-                            <p>
-                                Fill out the fields below to add tasks to this project.
-                            </p>
-
-                            <p class="success-message">
-                                New Task added!
-                            </p>
+                                    <p class="success-message">
+                                        New Task added!
+                                    </p>
+                                </div>
+                                {% crispy task_form %}
+                            </div>
                         </div>
-                        {% crispy task_form %}
                     </div>
                     <div class="span3">
                         <h3>Tasks</h3>
@@ -90,25 +98,31 @@
                 <div class="tab-pane" id="new-category">
 
                     <div class="span4">
-                        <div class="instructions">
-                            <p class="lead">
-                                Step 3: Modify or Create Categories
-                            </p>
+                        <div class="form-fixed row">
+                            <div class="span4">
+                                <div class="instructions">
+                                    <p class="lead">
+                                        Step 3: Create Categories
+                                    </p>
 
-                            <p>
-                                *Optional. Fill out the fields below to create a new categories or skip this step and
-                                reuse
-                                existing categories.
-                            </p>
+                                    <!--
+                                    <p>
+                                        *Optional. Fill out the fields below to create a new categories or skip this step and
+                                        reuse
+                                        existing categories.
+                                    </p>
+                                    -->
 
-                            <p class="success-message">
-                                New Category added! Now create tasks for this project.
-                            </p>
+                                    <p class="success-message">
+                                        New Category added! Now create tasks for this project.
+                                    </p>
+                                </div>
+                                {% crispy task_category_form %}
+                            </div>
                         </div>
-                        {% crispy task_category_form %}
                     </div>
                     <div class="span3">
-                        <h3>Task Categories</h3>
+                        <h3>Categories</h3>
                         <ul class="nav nav-list" id="task-category-list">
                         </ul>
                     </div>
@@ -122,10 +136,11 @@
                                 Finish Project Details: Save and add project images.
                             </p>
 
+                            <!--
                             <p>
                                 If you have completed the previous steps, click "save" below to start adding project images.
-
                             </p>
+                            -->
                             <p class="success-message">
                                 New Task added!
                             </p>
@@ -161,8 +176,6 @@
         var category_form_url = "{% url 'tasks:task-category-form' %}";
         var project_form_url = "{% url 'projects:project-form' %}";
 
-
-
     </script>
 
 {% endblock extra_js %}
@@ -170,11 +183,40 @@
 {% block extra_css %}
     <link rel='stylesheet' href="{% static 'css/font-awesome.min.css' %}">
     <style>
+    #project-summary-fields > a:first-child {
+        position: relative;
+        bottom: 40px;
+        font-size: 20px;
+    }
+    #form-wizard .tab-content {
+        overflow: inherit;
+    }
+    .nav-list > li > a, {
+        margin-right: 0;
+        margin-left: 0;
+
+    }
+    .nav-list {
+        padding-right: 0;
+     }
+    .form-fixed, #step-nav {
+        position: fixed;
+        background-color: #f7f7f7;
+    }
+    .form-fixed {
+        top: 200px;
+    }
+    #step-nav {
+        top: 160px;
+    }
     .placeholder {
         min-height: 24px;
     }
     #form-wizard {
         min-height: 1000px;
+    }
+    #form-wizard h3 {
+        margin-top: 30px;
     }
         .success-message {
             display: none;
