@@ -23,7 +23,7 @@ urlpatterns = patterns('projects',
                            name='project-list-super-month'),
                        url("^list/year/(?P<year>\d{4})/$", project_list_super, name='project-list-super-year'),
                        url(r'^list/$', project_list_super, name='project-list-super'),
-                       url(r'^versions/(?P<pk>\d+)/$', VersionDetailView.as_view(), name='project-detail'),
+                       url(r'^versions/(?P<pk>\d+)/$', VersionDetailView.as_view(), name='version-detail'),
                        url(r'^([\d-]+)/$', ProjectListView.as_view(), name='project-list'),
                        url(r'^$', ProjectRedirectView.as_view(), name='project-redirect'),
 )

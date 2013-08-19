@@ -144,18 +144,23 @@
                                     {% if user.is_superuser %}
                                         <li>
                                             <a href="{% url 'updates:update-project-form' project.id %}">
-                                                Create Update
+                                                Update
                                             </a>
                                         </li>
                                         <li>
                                             <a href="{% url "changes:change-project-form" project.id %}">
-                                                Create Change Order
+                                                Change Order
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{% url "projects:project-wizard" %}?project={{ project.id }}">
+                                                Edit
                                             </a>
                                         </li>
                                     {% endif %}
                                     <li>
                                         <a href="{% url "projects:project-detail" project.id %}">
-                                            View Project Page
+                                            View
                                         </a>
                                     </li>
                                 </ul>
