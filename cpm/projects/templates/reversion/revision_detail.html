@@ -1,9 +1,96 @@
 {% extends 'base.html' %}
 
+
 {% block content %}
+    <div class="header">
+    <p>
+        Comparing Version from {{ revision.date_created|date:"N d Y f a" }} to Version from {{ old_revision.date_created|date:"N d Y f a" }}
+    </p>
+    </div>
+
+    <table class="table">
+    <thead>
+    <tr>
+        <th class="span4">
+            {{ revision.date_created|date:"N d Y f a" }}
+        </th>
+        <th class="span4">
+            Difference
+        </th>
+        <th class="span4">
+            {{ old_revision.date_created|date:"N d Y f a" }}
+        </th>
+    </tr>
+
+    </thead>
+    <tbody>
 
 {% for version in revision.version_set.all %}
-<p>{{ version.serialized_data }}</p>
+    <tr>
+        <td class="span4" id="current_{{ version.content_type.name }}-{{ version.object_id }}">
+        {{ version.content_type.name }}: {{ version.object_id }}
+        <ul class="unstyled">
+            {% for item in version.field_dict.viewitems %}
+                <li>{{ item.0 }}: {{ item.1 }}</li>
+            {% endfor %}
+        </ul>
+        </td>
+        <td class="span4" id="diff_{{ version.content_type.name }}-{{ version.object_id }}">
+        </td>
+        <td class="span4" id="old_{{ version.content_type.name }}-{{ version.object_id }}">
+        </td>
+    </tr>
+
 {% endfor %}
+    </tbody>
+    </table>
+
+    <div class="span4">
+        <div id="diffs"></div>
+    </div>
 
 {% endblock content %}
+
+{% block extra_js %}
+
+<script type="text/javascript">
+
+$(document).ready( function() {
+    getDiffs({{ revision.id }}, {{ old_revision.id }});
+    {% for version in old_revision.version_set.all %}
+    $('#old_{{ version.content_type.name }}-{{ version.object_id }}').html(
+        '{{ version.content_type.name }}: {{ version.object_id }}'
+        + '<ul class="unstyled">'
+        + '{% for item in version.field_dict.viewitems %}<li>{{ item.0 }}: {{ item.1 }}</li>{% endfor %}'
+        + '</ul>'
+    );
+    {% endfor %}
+
+});
+
+function getDiffs(new_pk, old_pk) {
+    var JSON_url = '/cpm/versions/diff/' + new_pk + '/' + old_pk + '/';
+    $.getJSON(JSON_url, function (data) {
+        $.each(data, function (key, value) {
+            var diff = {
+                'object': [value.model, value.pk],
+                'patches': []
+            }
+            $.each(value.patches, function (key_1, value_1) {
+                diff.patches.push(value_1.field + ': ' + value_1.patch);
+            });
+            $('#diff_' + diff.object.join('-')).html(
+                    diff.object.join(': ')
+                    + '<ul class="unstyled"><li>'
+                    + diff.patches.join('<li></li>')
+                    + '</li></ul>'
+            );
+        });
+    });
+}
+
+
+
+</script>
+
+{% endblock extra_js %}

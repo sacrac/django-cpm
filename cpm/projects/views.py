@@ -15,6 +15,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.base import RedirectView
 
 import reversion
+from reversion.helpers import generate_patch_html
 
 from core.views import AjaxableResponseMixin
 from tasks.models import TaskCategory
@@ -27,15 +28,64 @@ from .helpers import create_project_summary_tree
 
 
 
+def get_dict_in_list_2(key, key0, value, value0, dict_list):
+    """
+    looks through a list of dictionaries and returns dict, where dict[key] == value
+    """
+    result = None
+    for dict in dict_list:
+        if dict[key] == value:
+            if dict[key0] == value0:
+                result = dict
+    return result
+
+@json_view
+def version_diff(request, pk, old_pk):
+    revision = get_object_or_404(reversion.models.Revision, pk=pk)
+    old_revision = get_object_or_404(reversion.models.Revision, pk=old_pk)
+    version_set = []
+    old_version_set = []
+    for v in revision.version_set.all():
+        version = {'type': v.content_type.name, 'id': v.object_id_int, 'version': v}
+        version_set.append(version)
+    for v in old_revision.version_set.all():
+        version = {'type': v.content_type.name, 'id': v.object_id_int, 'version': v}
+        old_version_set.append(version)
+    context = []
+    for version in version_set:
+        old_version = get_dict_in_list_2('id', 'type', version['id'], version['type'], old_version_set)
+        if old_version:
+            patches = []
+            for field in version['version'].field_dict:
+                patch = generate_patch_html(old_version['version'], version['version'], field, cleanup='semantic')
+                patches.append({'field': field, 'patch': patch})
+            context.append({
+                'pk': version['id'],
+                'model': version['type'],
+                'patches': patches
+            })
+
+    return context
+
+def version_compare(request, pk, old_pk):
+    revision = get_object_or_404(reversion.models.Revision, pk=pk)
+    old_revision = get_object_or_404(reversion.models.Revision, pk=old_pk)
+    context = {'old_revision': old_revision, 'revision': revision}
+    return render(request, 'reversion/revision_detail.html', context)
+
+
 class VersionDetailView(generic.DetailView):
+    model = reversion.models.Revision
+
+class VersionDetailJSONView(generic.DetailView):
     model = reversion.models.Revision
 
     @json_view
     def dispatch(self, *args, **kwargs):
-        return super(VersionDetailView, self).dispatch(*args, **kwargs)
+        return super(VersionDetailJSONView, self).dispatch(*args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        self.object = super(VersionDetailView, self).get_object()
+        self.object = super(VersionDetailJSONView, self).get_object()
         context = [version.serialized_data for version in self.object.version_set.all()]
 
         return context
@@ -127,7 +177,8 @@ class ProjectListView(generic.ListView):
 
     def get_context_data(self, **kwargs):
         self.queryset = super(ProjectListView, self).get_queryset()
-        self.user = get_object_or_404(User, id=self.args[0])
+        #TODO: I think this is redundant remove if there arent any errors
+        #self.user = get_object_or_404(User, id=self.args[0])
         context = {
             'client': self.user
         }

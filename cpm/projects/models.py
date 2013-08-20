@@ -77,7 +77,7 @@ class Project(DateStamp, Slugged):
     def get_project_category_totals(self):
         result_dict = {}
         cat_dict = {}
-        all_tasks = self.task_set.all().order_by('_order')
+        all_tasks = self.task_set.select_related().all().order_by('_order')
         for task in all_tasks:
             try:
                 cat_dict[task.category.id]
