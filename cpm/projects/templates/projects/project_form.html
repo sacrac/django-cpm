@@ -12,7 +12,7 @@
                 <h2 id='project-title'>Project Wizard</h2>
             </div>
             <div class="container">
-                <ul class="nav nav-tabs" id="step-nav">
+                <ul class="nav nav-tabs span12" id="step-nav">
                     <li class="active">
                         <a href="#new-project">Project</a>
                     </li>
@@ -24,8 +24,8 @@
                     </li>
                     <li class="disabled">
                         <a href="#save">Save and add Images</a></li>
-                    <li class="dropdown">
-                        <a data-target="#" data-toggle="dropdown">Version History</a>
+                    <li class="dropdown pull-right">
+                        <a href="#" data-toggle="dropdown">Version History</a>
                         <ul id="version-list" class="dropdown-menu"></ul>
                     </li>
                 </ul>
@@ -183,6 +183,9 @@
 {% block extra_css %}
     <link rel='stylesheet' href="{% static 'css/font-awesome.min.css' %}">
     <style>
+    #revision-list {
+        z-index: 100;
+    }
     #project-summary-fields > a:first-child {
         position: relative;
         bottom: 40px;
@@ -201,13 +204,13 @@
      }
     .form-fixed, #step-nav {
         position: fixed;
-        background-color: #f7f7f7;
     }
     .form-fixed {
         top: 200px;
     }
     #step-nav {
         top: 160px;
+        background-color: #f7f7f7;
     }
     .placeholder {
         min-height: 24px;

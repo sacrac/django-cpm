@@ -324,12 +324,10 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
         });
         var versions = [];
         $.each(data['versions'], function(key, value) {
-            var instance = $.parseJSON(value.instance);
+            var compare_url = value.compare_url;
             var created  = value.created.split('T');
             var version = value.version;
-            console.log(instance);
-            console.log(created);
-            versions.push(version + '"><a href="#">Date: ' + created[0] + ' Time: ' + created[1] );
+            versions.push(version + '"><a href="' + compare_url + '">Date: ' + created[0] + ' Time: ' + created[1] );
         });
 
         versions = '<li id="version-' + versions.join('</a></li><li id="version-');

@@ -21,6 +21,7 @@ from core.views import AjaxableResponseMixin
 from tasks.models import TaskCategory
 from tasks.forms import TaskForm, TaskCategoryForm
 from jsonview.decorators import json_view
+from reversion.models import Revision
 
 from .forms import ProjectForm, ProjectFilterForm
 from .models import Project, ProjectImage
@@ -70,6 +71,9 @@ def version_diff(request, pk, old_pk):
 def version_compare(request, pk, old_pk):
     revision = get_object_or_404(reversion.models.Revision, pk=pk)
     old_revision = get_object_or_404(reversion.models.Revision, pk=old_pk)
+    if request.method == 'POST':
+        revision.revert(delete=True)
+        return HttpResponseRedirect(request.GET['next'])
     context = {'old_revision': old_revision, 'revision': revision}
     return render(request, 'reversion/revision_detail.html', context)
 
@@ -111,9 +115,13 @@ class ProjectDetailJSONView(generic.DetailView):
         for version in version_list:
             #instance_data = version.serialized_data.strip('[]')
             timestamp = str(version.revision.date_created.isoformat()[:-13])
+            compare_url = '%s?next=%s' % (reverse('projects:version-compare',
+                                                 args=[version.revision_id, Revision.objects.latest('date_created').id]),
+                                         reverse('projects:project-detail', args=[self.object.id]))
             versions.append({
                 'version': version.pk,
-                'created': timestamp
+                'created': timestamp,
+                'compare_url': compare_url
             })
 
         context = {

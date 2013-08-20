@@ -6,6 +6,10 @@
     <p>
         Comparing Version from {{ revision.date_created|date:"N d Y f a" }} to Version from {{ old_revision.date_created|date:"N d Y f a" }}
     </p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary">Revert to this version</button>
+    </form>
     </div>
 
     <table class="table">
@@ -26,7 +30,7 @@
     <tbody>
 
 {% for version in revision.version_set.all %}
-    <tr>
+    <tr id="tr-{{ forloop.counter }}">
         <td class="span4" id="current_{{ version.content_type.name }}-{{ version.object_id }}">
         {{ version.content_type.name }}: {{ version.object_id }}
         <ul class="unstyled">
@@ -58,15 +62,31 @@
 $(document).ready( function() {
     getDiffs({{ revision.id }}, {{ old_revision.id }});
     {% for version in old_revision.version_set.all %}
-    $('#old_{{ version.content_type.name }}-{{ version.object_id }}').html(
-        '{{ version.content_type.name }}: {{ version.object_id }}'
-        + '<ul class="unstyled">'
-        + '{% for item in version.field_dict.viewitems %}<li>{{ item.0 }}: {{ item.1 }}</li>{% endfor %}'
-        + '</ul>'
-    );
-    {% endfor %}
+        if ($('#old_{{ version.content_type.name }}-{{ version.object_id }}')[0]) {
+            $('#old_{{ version.content_type.name }}-{{ version.object_id }}').html(
+                    '{{ version.content_type.name }}: {{ version.object_id }}'
+                            + '<ul class="unstyled">'
+                            + '{% for item in version.field_dict.viewitems %}<li>{{ item.0 }}: {{ item.1 }}</li>{% endfor %}'
+                            + '</ul>'
+            );
+        }
+        else {
+                $('#tr-{% if revision.version_set.count > forloop.counter0 %}{{ forloop.counter0 }}{% else %}{{ revision.version_set.count }}{% endif %}').after(
+                                '<tr>'
+                                + '<td id="current_{{ version.content_type.name }}-{{ version.object_id }}"></td>'
+                                + '<td id="diff_{{ version.content_type.name }}-{{ version.object_id }}"></td>'
+                                + '<td id="old_{{ version.content_type.name }}-{{ version.object_id }}">'
+                                + '{{ version.content_type.name }}: {{ version.object_id }}'
+                                        + '<ul class="unstyled">'
+                                        + '{% for item in version.field_dict.viewitems %}<li>{{ item.0 }}: {{ item.1 }}</li>{% endfor %}'
+                                        + '</ul>'
+                               + '</td>'
+                );
+            }
 
+    {% endfor %}
 });
+
 
 function getDiffs(new_pk, old_pk) {
     var JSON_url = '/cpm/versions/diff/' + new_pk + '/' + old_pk + '/';
