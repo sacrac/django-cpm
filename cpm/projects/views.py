@@ -110,7 +110,7 @@ class ProjectDetailJSONView(generic.DetailView):
 
     def get(self, request, *args, **kwargs):
         self.object = super(ProjectDetailJSONView, self).get_object()
-        version_list = reversion.get_for_object(self.object)[:10]
+        version_list = reversion.get_for_object(self.object)[1:100]
         versions = []
         for version in version_list:
             #instance_data = version.serialized_data.strip('[]')

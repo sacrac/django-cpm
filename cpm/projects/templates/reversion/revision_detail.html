@@ -16,13 +16,33 @@
     <thead>
     <tr>
         <th class="span4">
+            <p>
             {{ revision.date_created|date:"N d Y f a" }}
+            </p>
+            {% if revision.comment %}
+                <p>
+                    <small>
+                    {{ revision.comment }}
+                    </small>
+                </p>
+            {% endif %}
         </th>
         <th class="span4">
+            <p>
             Difference
+            </p>
         </th>
         <th class="span4">
+        <p>
             {{ old_revision.date_created|date:"N d Y f a" }}
+        </p>
+            {% if old_revision.comment %}
+                <p>
+                <small>
+                    {{ old_revision.comment }}
+                </small>
+                </p>
+            {% endif %}
         </th>
     </tr>
 

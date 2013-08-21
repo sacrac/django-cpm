@@ -8,6 +8,7 @@ from django.core.urlresolvers import reverse_lazy
 from projects.models import Project
 from tasks.models import Task
 from jsonview.decorators import json_view
+import reversion
 
 from .models import Update, UpdateImage
 from .forms import UpdateWizardForm1, UpdateWizardForm2
@@ -50,6 +51,11 @@ class UpdateFormView(generic.CreateView):
             for task in form.instance.tasks.all():
                 task.completion_date = now().date()
                 task.save()
+        project = Project.objects.get(id=form.instance.project_id)
+        print project.id
+        with reversion.create_revision():
+            project.save()
+            reversion.set_comment('Pre Update: ' + form.instance.title)
         return HttpResponseRedirect(reverse_lazy('updates:update-images-formset', kwargs={'update_id': form.instance.id}))
 
 

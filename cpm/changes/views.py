@@ -7,6 +7,7 @@ from django import forms
 
 from projects.models import Project
 from jsonview.decorators import json_view
+import reversion
 
 from .models import ChangeOrder
 
@@ -45,6 +46,12 @@ class ChangeOrderProjectFormView(generic.CreateView):
         form.save()
         redirect_url = reverse_lazy('projects:project-wizard') + '?project=%d&change_order=%d' % \
                        (form.instance.project_id, form.instance.id)
+        project = Project.objects.get(id=form.instance.project_id)
+        print project.id
+        with reversion.create_revision():
+            project.save()
+            reversion.set_comment('Pre Change Order: ' + form.instance.title)
+
         return HttpResponseRedirect(redirect_url)
 
 

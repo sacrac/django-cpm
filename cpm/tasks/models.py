@@ -74,8 +74,9 @@ reversion.register(Task)
 
 
 class TaskCategory(Slugged):
-    parent = models.ForeignKey("TaskCategory", blank=True, null=True, related_name="children")
-    ascendants = models.CharField(editable=False, max_length=1000, null=True)
+    parent = models.ForeignKey("TaskCategory", blank=True, null=True,
+                               related_name="children")
+    ascendants = models.CharField(editable=False, max_length=100, null=True)
     order = models.IntegerField(blank=True, null=True)
     description = models.TextField(blank=True)
 
@@ -88,8 +89,15 @@ class TaskCategory(Slugged):
         if self.parent is None:
             self._order = self.order
 
-        super(TaskCategory, self).save(*args, **kwargs)
-        self.update_descendants()
+        if self.ascendants:
+            if not self.id in [int(ascendant) for ascendant in self.ascendants.split(',')[:-1]]:
+                if self.update_descendants():
+                    super(TaskCategory, self).save(*args, **kwargs)
+            else:
+                print 'error: self id in ascendants'
+        else:
+            super(TaskCategory, self).save(*args, **kwargs)
+            self.update_descendants()
 
     def update_descendants(self):
         current_ascendants = self.ascendants
@@ -97,21 +105,34 @@ class TaskCategory(Slugged):
 
         ascendants = [str(self.id)]
         parent = self.parent
-        while parent is not None:
+        while parent is not None and parent is not self:
             ascendants.insert(0, str(parent.id))
-            parent = parent.parent
+            if parent.parent:
+                parent = parent.parent
+            else:
+                #the while condition will set parent to None and we cant validate it so we end the loop before this
+                #while the parent is not None
+                break
+            if parent == self:
+                break
 
-        ascendants = ",".join(ascendants)
-        self.ascendants = ascendants
+        if parent != self or parent is None:
+            print 'parent safe'
+            ascendants = ",".join(ascendants)
+            self.ascendants = ascendants
 
-        if ascendants != current_ascendants or ascendants is None:
-            super(TaskCategory, self).save(update_fields=['ascendants'])
-            print 'new    : ' + str(self.ascendants)
+            if ascendants != current_ascendants or ascendants is None:
+                super(TaskCategory, self).save(update_fields=['ascendants'])
+                print 'new    : ' + str(self.ascendants)
 
-        children = self.children.all()
-        if children:
-            for child in children:
-                child.update_descendants()
+            children = self.children.all()
+            if children:
+                for child in children:
+                    child.update_descendants()
+            return True
+        else:
+            return False
+
 
     def get_update_url(self):
         return reverse('tasks:task-category-update', kwargs={'pk': self.pk})

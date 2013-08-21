@@ -32,7 +32,7 @@ def manage_tasks(request, project_id):
         return {'success': True}
     else:
         formset = render_crispy_form(FormSet())
-    return {'formset': formset}
+    return {'formset': formset, 'success': False}
 
 
 
@@ -40,23 +40,24 @@ def manage_tasks(request, project_id):
 def manage_categories(request):
     FormSet = modelformset_factory(TaskCategory, form=TaskCategoryForm)
     if request.method == 'POST':
-        #TODO: There's no validation
         formset = FormSet(request.POST)
-        formset.save()
-        for form in formset:
-            cat = TaskCategory.objects.get(id=form.instance.id)
-            all_cats = cat.children.all()
-            if all_cats:
-                print all_cats
-                ordered_cats = []
-                for child in all_cats.order_by('order'):
-                    ordered_cats.append(child.id)
-                cat.set_taskcategory_order(ordered_cats)
-
-        return {'success': True}
+        if formset.is_valid():
+            formset.save()
+            for form in formset:
+                cat = TaskCategory.objects.get(id=form.instance.id)
+                all_cats = cat.children.all()
+                if all_cats:
+                    ordered_cats = []
+                    for child in all_cats.order_by('order'):
+                        ordered_cats.append(child.id)
+                    cat.set_taskcategory_order(ordered_cats)
+            return {'success': True}
+        else:
+            print formset.errors
+            formset = render_crispy_form(formset)
     else:
         formset = render_crispy_form(FormSet())
-    return {'formset': formset}
+    return {'formset': formset, 'success': False}
 
 
 class TaskListView(JSONResponseMixin, generic.ListView):

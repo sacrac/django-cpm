@@ -62,7 +62,6 @@ function descendantItemToList(item) {
     descendantsList.push(item);
     for (var i = 0; i < item.children.length; i++) {
         var child = descendantItemToList(item.children[i]);
-        console.log(child);
         descendantsList.push(child[0]);
         if (child[1]) {
             for (var a = 0; a < child.slice(1).length; a++) {
@@ -102,6 +101,9 @@ $(function () {
         else {
             getProjectSummary(project_id);
             $('#step-nav a[href="#new-category"]').parent().removeClass('disabled');
+            $('#step-nav a[href="#save"]').parent().removeClass('disabled');
+            $('#step-nav a[href="#save-version"]').parent().removeClass('disabled');
+            $('#step-nav #version-list').parent().removeClass('disabled');
             // Have to replace the OG form, therwise 2 csrf tokens are sent
             getProjectForm(project_form_url);
             getTaskCategoryForm(category_form_url);
@@ -140,6 +142,7 @@ function getCookie(name) {
 $('#task-list').sortable({
     axis: 'y',
     containment: 'parent',
+    revert: true,
     delay: 50,
     distance: 10
 });
@@ -158,9 +161,18 @@ $('#task-list').on("sortupdate", function (event, ui) {
         type: 'POST',
         data: ajaxPost,
         success: function (data) {
-            getProjectSummary(project_id, 1, 1);
+            if (!(data['success'])) {
+                //console.log('Fail');
+                console.log('success' + data['success']);
+                getProjectSummary(project_id);
+            }
+            else {
+                console.log('success' + data['success']);
+                getProjectSummary(project_id, 1, 1);
+            }
         },
         error: function (data) {
+            console.log(data['error']);
         }
     });
 });
@@ -171,6 +183,7 @@ $('#task-category-list').sortable({
     distance: 10,
     placeholder: 'placeholder',
     dropOnEmpty: true,
+    revert: true,
     items: 'li[id^="cat"]'
 });
 
@@ -225,8 +238,15 @@ $('#task-category-list').on("sortupdate", function (event, ui) {
         type: 'POST',
         data: ajaxPost,
         success: function (data) {
-            console.log('success' + data['success']);
-            getProjectSummary(project_id, 1, 1);
+            if (!(data['success'])) {
+                //console.log('Fail');
+                console.log('success' + data['success']);
+                getProjectSummary(project_id);
+            }
+            else {
+                console.log('success' + data['success']);
+                getProjectSummary(project_id, 1, 1);
+            }
         },
         error: function (data) {
             console.log(data['error']);
@@ -415,6 +435,8 @@ $('#form-wizard').on('submit', '#project-form', function (event) {
                 $('#step-nav a[href="#new-category"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#new-task"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#save"]').parent().removeClass('disabled');
+                $('#step-nav a[href="#save-version"]').parent().removeClass('disabled');
+                $('#step-nav #version-list').parent().removeClass('disabled');
                 $('#new-task input#id_title').focus();
             }
         },

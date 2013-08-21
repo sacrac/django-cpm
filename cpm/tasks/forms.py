@@ -65,6 +65,7 @@ class TaskCategoryForm(forms.ModelForm):
         fields = ['title', 'order', 'description', 'parent']
         widgets = {
             'order': forms.HiddenInput(),
+            #'ascendants': forms.HiddenInput(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -91,5 +92,25 @@ class TaskCategoryForm(forms.ModelForm):
                 )
             )
         )
+
+'''
+    def clean(self):
+        cleaned_data = super(TaskCategoryForm, self).clean()
+        parent = cleaned_data.get("parent")
+        ascendants = cleaned_data.get("ascendants")
+        print ascendants
+
+        if ascendants and parent:
+            # Only do something if there is a chance of an infinite loop (only instances with ascendants and a parent
+            # are at risk)
+            ascendants_list = [int(ascendant) for ascendant in ascendants.split(',')]
+            if parent in ascendants_list:
+                raise forms.ValidationError("Parent can't be an ascendant")
+
+        return cleaned_data
+'''
+
+
+
 
 
