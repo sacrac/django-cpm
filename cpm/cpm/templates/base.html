@@ -63,23 +63,8 @@
         {% if user.is_staff %}
             <li class="dropdown"><a href="#" data-toggle="dropdown">Manage</a>
                 <ul class="dropdown-menu">
-                    <li class="dropdown-submenu"><a href="{% url 'projects:project-list-super' %}">Projects</a>
-                        <ul class="dropdown-menu">
-                            <li class="dropdown"><a href="{% url 'projects:project-wizard' %}">New Project</a></li>
-                            <li class="dropdown"><a href="{% url 'projects:project-list-super' %}">List Projects</a>
-                        </ul>
-                    </li>
-                    <li class="dropdown-submenu"><a href="#" data-toggle="dropdown">Updates</a>
-                        <ul class="dropdown-menu">
-                            <li class="dropdown"><a href="{% url 'updates:update-form' %}">New Update</a></li>
-                        </ul>
-                    </li>
-                    <li class="dropdown-submenu"><a href="{% url 'changes:change-list' %}">Change Orders</a>
-                        <ul class="dropdown-menu">
-                            <li class="dropdown"><a href='{% url 'changes:change-form' %}'>New Change Order</a></li>
-                        </ul>
-                    </li>
-
+                        <li class="dropdown"><a href="{% url 'projects:project-wizard' %}">New Project</a></li>
+                        <li class="dropdown"><a href="{% url 'projects:project-list-super' %}">List Projects</a>
                 </ul>
             </li>
             {% endif %}

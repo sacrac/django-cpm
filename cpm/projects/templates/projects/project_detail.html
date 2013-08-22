@@ -81,7 +81,7 @@
                     </div>
                     <div class="tab-content">
 
-                        {% for update in project.update_set.all %}
+                        {% for update in project.update_set.all|dictsortreversed:"created" %}
                             <div id="tab-content-{{ update.slug }}"
                                  class="tab-pane{% if forloop.first %} active{% endif %}">
                                 <div class="span4">
@@ -253,7 +253,7 @@
                     </div>
                     <div class="tab-content">
 
-                        {% for changeorder in project.changeorder_set.all %}
+                        {% for changeorder in project.changeorder_set.all|dictsortreversed:"created" %}
                             <div id="tab-content-{{ changeorder.slug }}"
                                  class="tab-pane{% if forloop.first %} active{% endif %}">
                                 <div class="span4">
@@ -324,9 +324,6 @@
 {% endcomment %}
 {% endblock %}
 
-{% block jquery %}
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-{% endblock jquery %}
 
 {% block extra_js %}
 {{ block.super }}

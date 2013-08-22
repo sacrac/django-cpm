@@ -148,5 +148,6 @@ class TaskCategory(Slugged):
         for p in project.task_set.filter(category=self):
             total += p.expense
         return total
+reversion.register(TaskCategory, follow=['task_set'], exclude=["created, modified"])
 
 

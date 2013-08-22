@@ -120,14 +120,9 @@
                             </div>
                         </td>
                         <td class="span1">
-                            {% if user.is_superuser %}
-                                <a class="btn btn-mini btn-info"
-                                   href="{% url 'updates:update-project-form' project.user_id  %}">Update</a>
-                                {% else %}
                             <a class="btn btn-link" href="{% url 'projects:project-detail' project.id %}">
                                <i class="icon-external-link"></i>
                             </a>
-                            {% endif %}
                         </td>
                     </tr>
                 {% endfor %}

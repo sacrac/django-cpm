@@ -143,18 +143,8 @@
                                 <ul class="unstyled list-small">
                                     {% if user.is_superuser %}
                                         <li>
-                                            <a href="{% url 'updates:update-project-form' project.id %}">
-                                                Update
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a href="{% url "changes:change-project-form" project.id %}">
-                                                Change Order
-                                            </a>
-                                        </li>
-                                        <li>
                                             <a href="{% url "projects:project-wizard" %}?project={{ project.id }}">
-                                                Edit
+                                                Manage
                                             </a>
                                         </li>
                                     {% endif %}

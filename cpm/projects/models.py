@@ -118,6 +118,8 @@ reversion.register(Project, follow=['task_set'], exclude=["created, modified"])
 
 class ProjectImage(Slugged):
     project = models.ForeignKey(Project, related_name="project_images")
+    update = models.ForeignKey('updates.Update', related_name="project_images", null=True, blank=True)
+    change_order = models.ForeignKey('changes.ChangeOrder', related_name="project_images", null=True, blank=True)
     image = models.ImageField(max_length=200, upload_to='projects')
 
     class Meta:

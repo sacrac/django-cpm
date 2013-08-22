@@ -5,7 +5,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import *
 from django.forms.extras.widgets import SelectDateWidget
 
-from .models import Project
+from .models import Project, ProjectImage
 
 
 class ProjectForm(forms.ModelForm):
@@ -61,4 +61,39 @@ class ProjectFilterForm(forms.Form):
 
             )
 
+        )
+
+
+class ProjectImageForm(forms.ModelForm):
+    model = ProjectImage
+
+    class Meta:
+        model = ProjectImage
+        fields = ['title', 'slug', 'project', 'update', 'change_order', 'image']
+        widgets = {
+            'slug': forms.HiddenInput(),
+            'project': forms.HiddenInput(),
+            'update': forms.HiddenInput(),
+            'change_order': forms.HiddenInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ProjectImageForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.help_text_inline = True
+        #self.helper.form_tag = False
+        self.helper.form_id = 'project-image-form'
+        self.helper.form_class = 'form-inline'
+        #self.helper.form_action = 'projects:project-form'
+        self.helper.layout = Layout(
+            Div(
+                'slug',
+                'project',
+                'update',
+                'change_order',
+                Field('title'),
+                Field('image'),
+                Submit('save_project_image', 'Submit', css_class="btn-primary"),
+                Button('cancel', 'Cancel')
+            )
         )

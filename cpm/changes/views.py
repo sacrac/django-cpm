@@ -10,6 +10,7 @@ from jsonview.decorators import json_view
 import reversion
 
 from .models import ChangeOrder
+from .forms import ChangeOrderForm
 
 
 @json_view
@@ -36,6 +37,34 @@ class ChangeOrderDetailView(generic.DetailView):
 
 class ChangeOrderFormView(generic.CreateView):
     model = ChangeOrder
+    form_class = ChangeOrderForm
+
+    @json_view
+    def dispatch(self, *args, **kwargs):
+        return super(ChangeOrderFormView, self).dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        form.save()
+        project = get_object_or_404(Project, id=form.instance.project_id)
+        print project.id
+        with reversion.create_revision():
+            project.save()
+            reversion.set_comment('Pre Change Order: ' + form.instance.title)
+        form_html = render_crispy_form(self.form_class())
+        update_url = form.instance.get_update_url()
+        context = {'success': True, 'form_html': form_html, 'pk': form.instance.id, 'update_url': update_url}
+        #return HttpResponseRedirect(reverse_lazy('updates:update-images-formset', kwargs={'update_id': form.instance.id}))
+        return context
+
+    def form_invalid(self, form):
+        form_html = render_crispy_form(form)
+        return {'success': False, 'form_html': form_html}
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class()
+        form_html = render_crispy_form(form)
+        context = {'form_html': form_html}
+        return context
 
 
 class ChangeOrderProjectFormView(generic.CreateView):

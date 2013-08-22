@@ -1,3 +1,4 @@
+from crispy_forms.utils import render_crispy_form
 from django.forms.models import inlineformset_factory
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render_to_response, render
@@ -11,8 +12,7 @@ from jsonview.decorators import json_view
 import reversion
 
 from .models import Update, UpdateImage
-from .forms import UpdateWizardForm1, UpdateWizardForm2
-
+from .forms import UpdateWizardForm1, UpdateWizardForm2, UpdateForm
 
 from django.contrib.formtools.wizard.views import SessionWizardView
 
@@ -40,7 +40,7 @@ class UpdateListView(generic.ListView):
 class UpdateDetailView(generic.DetailView):
     model = Update
 
-
+'''
 class UpdateFormView(generic.CreateView):
     model = Update
     template_name = 'updates/update_form.html'
@@ -57,20 +57,42 @@ class UpdateFormView(generic.CreateView):
             project.save()
             reversion.set_comment('Pre Update: ' + form.instance.title)
         return HttpResponseRedirect(reverse_lazy('updates:update-images-formset', kwargs={'update_id': form.instance.id}))
+'''
 
-
-class UpdateProjectFormView(generic.CreateView):
+class UpdateFormView(generic.CreateView):
     model = Update
-    form_class = UpdateWizardForm1
+    form_class = UpdateForm
+
+    @json_view
+    def dispatch(self, *args, **kwargs):
+        return super(UpdateFormView, self).dispatch(*args, **kwargs)
 
     def form_valid(self, form):
-        form.instance.project = get_object_or_404(Project, id=self.args[0])
         form.save()
+        project = get_object_or_404(Project, id=form.instance.project_id)
+        print project.id
+        with reversion.create_revision():
+            project.save()
+            reversion.set_comment('Pre Update: ' + form.instance.title)
         if form.instance.tasks:
             for task in form.instance.tasks.all():
                 task.completion_date = now().date()
                 task.save()
-        return HttpResponseRedirect(reverse_lazy('updates:update-images-formset', kwargs={'update_id': form.instance.id}))
+        form_html = render_crispy_form(form)
+        update_url = form.instance.get_update_url()
+        context = {'success': True, 'form_html': form_html, 'pk': form.instance.id, 'update_url': update_url}
+        #return HttpResponseRedirect(reverse_lazy('updates:update-images-formset', kwargs={'update_id': form.instance.id}))
+        return context
+
+    def form_invalid(self, form):
+        form_html = render_crispy_form(form)
+        return {'success': False, 'form_html': form_html}
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class()
+        form_html = render_crispy_form(form)
+        context = {'form_html': form_html}
+        return context
 
 
 class UpdateUpdateView(generic.UpdateView):

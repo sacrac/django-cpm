@@ -5,18 +5,25 @@
  * To change this template use File | Settings | File Templates.
  */
 var project_id;
+var update_id;
+var change_order_id;
 var project_summary_json = {};
 var task_form_url;
 var category_form_url;
 var project_form_url;
+var update_form_url;
+var change_form_url;
 
 var project_url_id = GetURLParameter('project');
 var change_order_url_id = GetURLParameter('change_order');
 
+
+
 $(window).scroll(function(){
-    $(".form-fixed").css("top",Math.max(40,200-$(this).scrollTop()));
-    $("#step-nav").css("top",Math.max(0,160-$(this).scrollTop()));
+    $(".form-fixed").css("top",Math.max(10,160-$(this).scrollTop()));
+    $("#step-nav").css("top",Math.max(10,160-$(this).scrollTop()));
 });
+
 
 
 function allDescendants (node, project_data) {
@@ -101,6 +108,8 @@ $(function () {
         else {
             getProjectSummary(project_id);
             $('#step-nav a[href="#new-category"]').parent().removeClass('disabled');
+            $('#step-nav a[href="#new-update"]').parent().removeClass('disabled');
+            $('#step-nav a[href="#new-change"]').parent().removeClass('disabled');
             $('#step-nav a[href="#save"]').parent().removeClass('disabled');
             $('#step-nav a[href="#save-version"]').parent().removeClass('disabled');
             $('#step-nav #version-list').parent().removeClass('disabled');
@@ -347,7 +356,7 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
             var compare_url = value.compare_url;
             var created  = value.created.split('T');
             var version = value.version;
-            versions.push(version + '"><a href="' + compare_url + '">Date: ' + created[0] + ' Time: ' + created[1] );
+            versions.push(version + '"><a href="' + compare_url + '">D: ' + created[0] + ' T: ' + created[1] );
         });
 
         versions = '<li id="version-' + versions.join('</a></li><li id="version-');
@@ -428,20 +437,81 @@ $('#form-wizard').on('submit', '#project-form', function (event) {
             }
             else {
                 project_form_url = data['update_url'];
-                project_id = data['pk'];
                 //console.log('PID:  ' + data['pk']);
-                //$('#new-project').find('.success-message').show(1000).hide(5000);
-                showStep(2);
                 $('#step-nav a[href="#new-category"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#new-task"]').parent().removeClass('disabled');
+                $('#step-nav a[href="#new-update"]').parent().removeClass('disabled');
+                $('#step-nav a[href="#new-change"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#save"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#save-version"]').parent().removeClass('disabled');
                 $('#step-nav #version-list').parent().removeClass('disabled');
-                $('#new-task input#id_title').focus();
+                if (!(project_id)) {
+                    project_id = data['pk'];
+                    window.location = '/cpm/wizard/?project=' + project_id;
+                }
+                project_id = data['pk'];
             }
         },
         error: function () {
             $('#new-project').find('.error-message').show()
+        }
+    });
+    return false;
+});
+
+
+$('#form-wizard').on('submit', '#task-form', function (event) {
+    event.preventDefault();
+    var $task_form = $(this);
+    var task_form_title = $task_form.find('#id_title').val();
+    var task_form_category = $task_form.find('#id_category').val();
+    var task_form_project = $task_form.find('#id_project');
+    var task_url;
+    var task_form_changes = '&changes='
+    var cookie = 'csrfmiddlewaretoken=' + getCookie('csrftoken') + '&';
+
+    if (task_form_project.val() == "") {
+        task_form_project.val(project_id);
+
+    }
+    if (change_order_id) {
+        task_form_changes += change_order_id;
+    }
+
+    if (!$(this).attr('action')) {
+        task_url = task_form_url;
+        if (change_order_url_id) {
+            task_form_changes += change_order_url_id;
+        }
+    } else {
+        task_url = $(this).attr('action');
+    }
+    console.log(cookie + $(this).serialize() + task_form_changes);
+
+    $.ajax({
+        url: task_url,
+        type: "POST",
+        data: cookie + $(this).serialize() + task_form_changes,
+        success: function (data) {
+            if (!(data['success'])) {
+                $task_form.replaceWith(data['form_html']);
+            }
+            else {
+                $task_form.replaceWith(data['form_html']);
+                $task_form.find('.success-message').show(1000).hide(5000);
+                if ((data['new'])) {
+                    $('#ul-category-' + task_form_category).prepend('<li><a href="' + data['update_url'] + '">' + task_form_title + '</a></li>');
+                }
+                if (!(change_order_url_id)) {
+                    getProjectSummary(project_id);
+                }
+                else {
+                    getProjectCOSummary(change_order_url_id);
+                }
+            }
+        },
+        error: function () {
+            $task_form.find('.error-message').show()
         }
     });
     return false;
@@ -484,57 +554,96 @@ $('#form-wizard').on('submit', '#task-category-form', function (event) {
     return false;
 });
 
-$('#form-wizard').on('submit', '#task-form', function (event) {
+$('#form-wizard').on('submit', '#update-form', function (event) {
+    var $this = $(this);
     event.preventDefault();
-    var $task_form = $(this);
-    var task_form_title = $task_form.find('#id_title').val();
-    var task_form_category = $task_form.find('#id_category').val();
-    var task_form_project = $task_form.find('#id_project');
-    var task_url;
-    var task_form_changes = '&changes='
+    var this_url;
     var cookie = 'csrfmiddlewaretoken=' + getCookie('csrftoken') + '&';
 
-    if (task_form_project.val() == "") {
-        task_form_project.val(project_id);
-
-    }
-
     if (!$(this).attr('action')) {
-        task_url = task_form_url;
-        if (change_order_url_id) {
-            task_form_changes += change_order_url_id;
-        }
+        this_url = update_form_url;
     } else {
-        task_url = $(this).attr('action');
+        this_url = $(this).attr('action');
+    }
+    var update_form_project = $this.find('#id_project');
+    if (update_form_project.val() == "") {
+        update_form_project.val(project_id);
+
     }
 
     $.ajax({
-        url: task_url,
+        url: this_url,
         type: "POST",
-        data: cookie + $(this).serialize() + task_form_changes,
+        data: cookie + $(this).serialize(),
         success: function (data) {
             if (!(data['success'])) {
-                $task_form.replaceWith(data['form_html']);
+                $this.replaceWith(data['form_html']);
             }
             else {
-                $task_form.replaceWith(data['form_html']);
-                $task_form.find('.success-message').show(1000).hide(5000);
-                if ((data['new'])) {
-                    $('#ul-category-' + task_form_category).prepend('<li><a href="' + data['update_url'] + '">' + task_form_title + '</a></li>');
-                }
-                if (!(change_order_url_id)) {
-                    getProjectSummary(project_id);
-                }
-                else {
-                    getProjectCOSummary(change_order_url_id);
-                }
+                $this.replaceWith(data['form_html']);
+                $this.find('.success-message').show();
+                update_id = data.pk;
+                showStep(6);
             }
         },
         error: function () {
-            $task_form.find('.error-message').show()
+            $this.find('.error-message').show();
         }
     });
     return false;
+});
+
+$('#form-wizard').on('submit', '#change-form', function (event) {
+    var $this = $(this);
+    event.preventDefault();
+    var this_url;
+    var cookie = 'csrfmiddlewaretoken=' + getCookie('csrftoken') + '&';
+
+    if (!$(this).attr('action')) {
+        this_url = change_form_url;
+    } else {
+        this_url = $(this).attr('action');
+    }
+    var change_form_project = $this.find('#id_project');
+    if (change_form_project.val() == "") {
+        change_form_project.val(project_id);
+
+    }
+
+    $.ajax({
+        url: this_url,
+        type: "POST",
+        data: cookie + $(this).serialize(),
+        success: function (data) {
+            if (!(data['success'])) {
+                $this.replaceWith(data['form_html']);
+            }
+            else {
+                $this.replaceWith(data['form_html']);
+                $this.find('.success-message').show();
+                change_order_id = data.pk;
+                showStep(2);
+            }
+        },
+        error: function () {
+            $this.find('.error-message').show();
+        }
+    });
+    return false;
+});
+
+$('#form-wizard').on('submit', '#project-image-form', function (event) {
+    var $this = $(this);
+    var image_form_project = $this.find('#id_project');
+    if (image_form_project.val() == "") {
+        image_form_project.val(project_id);
+    }
+    if (update_id) {
+        var image_form_update = $this.find('#id_update');
+        if (image_form_update.val() == "") {
+            image_form_update.val(update_id);
+        }
+    }
 });
 
 
@@ -594,12 +703,17 @@ function showStep(step) {
     else if (step == 2) {
         $('#step-nav a[href="#new-task"]').tab('show');
     }
-    else if (step == 4) {
-        $('#step-nav a[href="#save"]').tab('show');
-    }
-    else {
+    else if (step == 3) {
         $('#step-nav a[href="#new-category"]').tab('show');
-
+    }
+    else if (step == 4) {
+        $('#step-nav a[href="#new-update"]').tab('show');
+    }
+    else if (step == 5) {
+        $('#step-nav a[href="#new-change"]').tab('show');
+    }
+    else if (step == 6) {
+        $('#step-nav a[href="#save"]').tab('show');
     }
 }
 $('#step-nav a[href="#new-project"]').click(function (e) {
@@ -615,6 +729,18 @@ $('#step-nav a[href="#new-category"]').click(function (e) {
     }
 });
 $('#step-nav a[href="#new-task"]').click(function (e) {
+    e.preventDefault();
+    if (!($(this).parent().is('.disabled'))) {
+        $(this).tab('show');
+    }
+});
+$('#step-nav a[href="#new-update"]').click(function (e) {
+    e.preventDefault();
+    if (!($(this).parent().is('.disabled'))) {
+        $(this).tab('show');
+    }
+});
+$('#step-nav a[href="#new-change"]').click(function (e) {
     e.preventDefault();
     if (!($(this).parent().is('.disabled'))) {
         $(this).tab('show');
@@ -675,4 +801,6 @@ $('#save-project').on('click', function(e) {
     e.preventDefault();
     window.location = '/cpm/images/' + project_id + '/';
 });
+
+
 

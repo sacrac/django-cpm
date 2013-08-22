@@ -21,6 +21,7 @@ from changes.models import ChangeOrder
 from .models import Task, TaskCategory
 from .forms import TaskForm, TaskCategoryForm
 
+
 @json_view
 def manage_tasks(request, project_id):
     project = Project.objects.get(pk=project_id)
@@ -33,7 +34,6 @@ def manage_tasks(request, project_id):
     else:
         formset = render_crispy_form(FormSet())
     return {'formset': formset, 'success': False}
-
 
 
 @json_view
@@ -171,9 +171,25 @@ class TaskUpdateView(generic.UpdateView):
     def dispatch(self, *args, **kwargs):
         return super(TaskUpdateView, self).dispatch(*args, **kwargs)
 
-    def form_valid(self, form):
+    def post(self, request, *args, **kwargs):
+        changes = None
+        if "changes" in request.POST:
+            changes = request.POST['changes']
+            print changes
+        self.object = self.get_object()
+        form_class = self.get_form_class()
+        form = self.get_form(form_class)
+        if form.is_valid():
+            return self.form_valid(form, changes)
+        else:
+            return self.form_invalid(form)
+
+    def form_valid(self, form, changes):
         #TODO: Form processing needed
         form.save()
+        if changes:
+            self.object.changes.add(changes)
+            self.object.save()
         update_url = self.object.get_update_url()
         form_html = render_crispy_form(self.form_class())
         context = {'success': True, 'update_url': update_url, 'form_html': form_html, 'new': False}
@@ -208,6 +224,7 @@ class TaskDeleteView(generic.DeleteView):
 
     def form_invalid(self, form):
         return {'success': False}
+
 
 class TaskCategoryListView(generic.ListView):
     model = TaskCategory
@@ -260,7 +277,6 @@ def get_r_branch(tree):
 
 
 class TaskCategoryListViewAlt(TaskCategoryListView):
-
     def get_queryset(self):
         self.primary_categories = TaskCategory.objects.filter(parent=None).order_by("_order")
         return self.primary_categories

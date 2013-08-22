@@ -10,20 +10,26 @@ from django.utils.http import urlquote
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
+from django.views.generic.detail import SingleObjectMixin
+from django.views.generic.edit import FormMixin
+
 from django.core.urlresolvers import reverse_lazy, reverse
 from django.http import HttpResponse, HttpResponseRedirect
 from django.views.generic.base import RedirectView
 
 import reversion
 from reversion.helpers import generate_patch_html
+from reversion.models import Revision
+
+from jsonview.decorators import json_view
 
 from core.views import AjaxableResponseMixin
 from tasks.models import TaskCategory
 from tasks.forms import TaskForm, TaskCategoryForm
-from jsonview.decorators import json_view
-from reversion.models import Revision
+from updates.forms import UpdateForm
+from changes.forms import ChangeOrderForm
 
-from .forms import ProjectForm, ProjectFilterForm
+from .forms import ProjectForm, ProjectFilterForm, ProjectImageForm
 from .models import Project, ProjectImage
 from .helpers import create_project_summary_tree
 
@@ -117,7 +123,7 @@ class ProjectDetailJSONView(generic.DetailView):
             timestamp = str(version.revision.date_created.isoformat()[:-13])
             compare_url = '%s?next=%s' % (reverse('projects:version-compare',
                                                  args=[version.revision_id, Revision.objects.latest('date_created').id]),
-                                         reverse('projects:project-detail', args=[self.object.id]))
+                                                 reverse('projects:project-detail', args=[self.object.id]))
             versions.append({
                 'version': version.pk,
                 'created': timestamp,
@@ -194,35 +200,35 @@ class ProjectListView(generic.ListView):
         return super(ProjectListView, self).get_context_data(**context)
 
 
-class ProjectWizardView(AjaxableResponseMixin, generic.CreateView):
-    model = Project
+class ProjectWizardView(generic.FormView):
     form_class = ProjectForm
     template_name = 'projects/project_form.html'
+    success_url = reverse_lazy('projects:project-list-super')
 
     def get_context_data(self, **kwargs):
+
         context = {
             'task_form': TaskForm(),
             'task_category_form': TaskCategoryForm(),
+            'update_form': UpdateForm(),
+            'change_form': ChangeOrderForm(),
+            'project_image_form': ProjectImageForm(),
             'task_categories': TaskCategory.objects.all().order_by('order')
         }
         context.update(kwargs)
         return super(ProjectWizardView, self).get_context_data(**context)
 
+    def post(self, request, *args, **kwargs):
+        if "save_project_image" in request.POST:
+            form = ProjectImageForm(request.POST, request.FILES)
+            if form.is_valid():
+                return self.form_valid(form)
+            else:
+                return self.form_invalid(form)
+
     def form_valid(self, form):
-        # We make sure to call the parent's form_valid() method because
-        # it might do some processing (in the case of CreateView, it will
-        # call form.save() for example).
-        response = super(AjaxableResponseMixin, self).form_valid(form)
-        if self.request.is_ajax():
-            update_url = self.object.get_update_url()
-            data = {
-                'success': True,
-                'pk': self.object.pk,
-                'update_url': update_url,
-            }
-            return self.render_to_json_response(data)
-        else:
-            return response
+        form.save()
+        return super(ProjectWizardView, self).form_valid(form)
 
 
 class ProjectFormView(generic.CreateView):

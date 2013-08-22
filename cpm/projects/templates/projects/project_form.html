@@ -5,37 +5,16 @@
 
 {% block content %}
 
+
     <div class="well pad-0" id="form-wizard">
             <div class="header">
                 <i class="pull-left icon-briefcase colour"></i>
 
                 <h2 id='project-title'>Project Wizard</h2>
             </div>
-            <div class="container">
-                <ul class="nav nav-tabs span12" id="step-nav">
-                    <li class="active">
-                        <a href="#new-project">Project</a>
-                    </li>
-                    <li class="disabled">
-                        <a href="#new-task">Tasks</a>
-                    </li>
-                    <li class="disabled">
-                        <a href="#new-category">Categories</a>
-                    </li>
-                    <li class="disabled">
-                        <a href="#save">Save and add Images</a></li>
-                    <li class="disabled dropdown pull-right">
-                        <a href="#" data-toggle="dropdown">Version History</a>
-                        <ul id="version-list" class="dropdown-menu"></ul>
-                    </li>
-                    <li class="disabled pull-right">
-                        <a href="#save-version" onclick="$('#submit-id-save_project').click()">Save Version</a>
-                    </li>
-                </ul>
-            </div>
         <div class="row">
 
-    <div class="span7">
+    <div class="span7 offset1">
 
 
         <div class="row">
@@ -131,6 +110,41 @@
                     </div>
                 </div>
 
+                <div class="tab-pane" id="new-update">
+
+                    <div class="form-fixed">
+                        <div class="span7">
+                            <div class="instructions">
+                                <p class="lead">
+                                    Create Update
+                                </p>
+                                <p class="success-message">
+                                    New Update added!
+                                </p>
+                            </div>
+                            {% crispy update_form %}
+                        </div>
+                    </div>
+                </div>
+
+
+                 <div class="tab-pane" id="new-change">
+
+                    <div class="form-fixed">
+                        <div class="span7">
+                            <div class="instructions">
+                                <p class="lead">
+                                    Create Change Order
+                                </p>
+                                <p class="success-message">
+                                    New Change Order added!
+                                </p>
+                            </div>
+                            {% crispy change_form %}
+                        </div>
+                    </div>
+                </div>
+
                 <div class="tab-pane" id="save">
                     <div class="span7">
                         <br/>
@@ -152,6 +166,7 @@
                                 New Task added!
                             </p>
                         </div>
+                        {% crispy project_image_form %}
                         <div class="content">
                             <a class="btn btn-primary" id="save-project" href="#">Save</a>
                         </div>
@@ -163,18 +178,60 @@
         </div>
     </div>
     </div>
-    <div class="span5">
+    <div class="span4">
             <h3>Project Summary</h3>
             <div id="project-summary-fields"></div>
             <ul class="nav nav-list" id="project-summary">
             </ul>
+    </div>
+    <div class="tabs-left">
+        <ul class="nav nav-list nav-tabs" id="step-nav">
+            <li class="active">
+                <a href="#new-project"><i class="icon-home"></i> <span>Project</span></a>
+            </li>
+            <li class="disabled">
+                <a href="#new-task"><i class="icon-tasks"></i> <span>Tasks</span></a>
+            </li>
+            <li class="disabled">
+                <a href="#new-category"><i class="icon-tags"></i> <span>Categories</span></a>
+            </li>
+            <li class="disabled">
+                <a href="#new-update"><i class="icon-ok-circle"></i> <span>Updates</span></a>
+            </li>
+            <li class="disabled">
+                <a href="#new-change"><i class="icon-edit"></i> <span>Change Orders</span></a>
+            </li>
+            <li class="disabled">
+                <a href="#"><i class="icon-external-link"></i> <span>View Project Page</span></a>
+            </li>
+            <li class="disabled">
+                <a href="#save"><i class="icon-picture"></i> <span>Images</span></a>
+            </li>
+
+            <li class="disabled dropdown">
+                <a href="#" data-toggle="dropdown">
+                    <i class="icon-code-fork"></i> <span>Version History</span>
+                </a>
+                <ul id="version-list" class="dropdown-menu"></ul>
+            </li>
+
+            <li class="disabled">
+                <a href="#save-version" onclick="$('#submit-id-save_project').click()">
+                    <i class="icon-save"></i> <span>Save Version</span>
+                </a>
+            </li>
+            <a href="#" id="collapse-step-nav">
+                <i class="icon-double-angle-left"></i>
+            </a>
+        </ul>
     </div>
 
 {% endblock %}
 
 
 {% block extra_js %}
-    <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    {# <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script> #}
+    <script src="{% static 'js/jquery-ui.js' %}"></script>
     <script src="{% static 'js/bootstrap-collapse.js' %}"></script>
     <script src="{% static 'js/projects/projectWizard.js' %}"></script>
 
@@ -182,6 +239,52 @@
         var task_form_url = "{% url 'tasks:task-form' %}";
         var category_form_url = "{% url 'tasks:task-category-form' %}";
         var project_form_url = "{% url 'projects:project-form' %}";
+        var update_form_url = "{% url 'updates:update-form' %}";
+        var change_form_url = "{% url 'changes:change-form' %}";
+
+        $('#collapse-step-nav').click(function(e) {
+            e.preventDefault();
+            if ($(this).find('i').hasClass('icon-double-angle-left')) {
+                $(this).parent().find('a > span').hide();
+                $(this).find('i').removeClass('icon-double-angle-left').addClass('icon-double-angle-right')
+            } else {
+                $(this).parent().find('a > span').show();
+                $(this).find('i').removeClass('icon-double-angle-right').addClass('icon-double-angle-left')
+            }
+        });
+
+        $('#collapse-step-nav').click();
+
+
+        {% comment %}
+
+$( document ).ajaxComplete(function( event,request, settings ) {
+    if (settings.url == '/cpm/create/') {
+        $('#new-project').find('.success-message').show(1000).hide(5000);
+    }
+    else if (settings.url ^= '/cpm/update/') {
+        $('#new-project').find('.success-message').show(1000).hide(5000);
+    }
+    else if (settings.url == '/cpm/tasks/create/') {
+        $('#new-task').find('.success-message').show(1000).hide(5000);
+    }
+    else if (settings.url ^= '/cpm/tasks/update/') {
+        $('#new-task').find('.success-message').show(1000).hide(5000);
+    }
+    else if (settings.url == '/cpm/tasks/category/create/') {
+        $('#new-category').find('.success-message').show(1000).hide(5000);
+    }
+    else if (settings.url ^= '/cpm/tasks/category/update/') {
+        $('#new-category').find('.success-message').show(1000).hide(5000);
+    }
+    else if (settings.url == '/cpm/updates/create/') {
+        $('#new-update').find('.return-message').hide(5000);
+    }
+    else if (settings.url == '/cpm/changes/create/') {
+        $('#new-change').find('.success-message').show(1000).hide(5000);
+    }
+});
+{% endcomment %}
 
     </script>
 
@@ -190,8 +293,32 @@
 {% block extra_css %}
     <link rel='stylesheet' href="{% static 'css/font-awesome.min.css' %}">
     <style>
-    #revision-list {
-        z-index: 100;
+
+    #collapse-step-nav {
+        padding: 2px 15px;
+    }
+
+    #step-nav a span {
+    }
+
+
+   #step-nav i {
+        font-size: 22px;
+        min-width: 30px;
+        display: inline-block;
+        line-height: 18px;
+        text-align: center;
+
+    }
+    #step-nav li a {
+        height: 20px;
+        min-width: 20px;
+    }
+
+    #version-list {
+        max-height: 150px;
+        overflow-y: scroll;
+
     }
     #project-summary-fields > a:first-child {
         position: relative;
@@ -204,7 +331,6 @@
     .nav-list > li > a, {
         margin-right: 0;
         margin-left: 0;
-
     }
     .nav-list {
         padding-right: 0;
@@ -213,11 +339,12 @@
         position: fixed;
     }
     .form-fixed {
-        top: 200px;
+        top: 160px;
     }
     #step-nav {
         top: 160px;
         background-color: #f7f7f7;
+        left:0;
     }
     .placeholder {
         min-height: 24px;
