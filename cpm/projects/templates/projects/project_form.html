@@ -147,30 +147,18 @@
 
                 <div class="tab-pane" id="save">
                     <div class="span7">
-                        <br/>
-                        <br/>
-                        <br/>
-                        <br/>
-
                         <div class="instructions">
                             <p class="lead">
-                                Finish Project Details: Save and add project images.
+                                Add Images
                             </p>
-
-                            <!--
-                            <p>
+                            <!-- <p>
                                 If you have completed the previous steps, click "save" below to start adding project images.
-                            </p>
-                            -->
+                            </p> -->
                             <p class="success-message">
-                                New Task added!
+                                New Image added!
                             </p>
                         </div>
                         {% crispy project_image_form %}
-                        <div class="content">
-                            <a class="btn btn-primary" id="save-project" href="#">Save</a>
-                        </div>
-
 
                     </div>
             </div>
@@ -202,7 +190,7 @@
                 <a href="#new-change"><i class="icon-edit"></i> <span>Change Orders</span></a>
             </li>
             <li class="disabled">
-                <a href="#"><i class="icon-external-link"></i> <span>View Project Page</span></a>
+                <a href="#view-project-page" id="view-project-page"><i class="icon-external-link"></i> <span>View Project Page</span></a>
             </li>
             <li class="disabled">
                 <a href="#save"><i class="icon-picture"></i> <span>Images</span></a>

@@ -110,6 +110,7 @@ $(function () {
             $('#step-nav a[href="#new-category"]').parent().removeClass('disabled');
             $('#step-nav a[href="#new-update"]').parent().removeClass('disabled');
             $('#step-nav a[href="#new-change"]').parent().removeClass('disabled');
+            $('#step-nav a[href="#view-project-page"]').parent().removeClass('disabled');
             $('#step-nav a[href="#save"]').parent().removeClass('disabled');
             $('#step-nav a[href="#save-version"]').parent().removeClass('disabled');
             $('#step-nav #version-list').parent().removeClass('disabled');
@@ -363,7 +364,7 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
         $('#version-list').html(versions);
         $('#project-summary-fields').html(
                 '<a class="toggle-table pull-right" data-target="#"><i class="icon-collapse-alt"></i></a>'
-                + '<div class="collapse">'
+                + '<div class="collapse in">'
                 + '<h4>'+ data.title + '</h4>'
                 + '<h5>' + data.username + '</h5>'
                 + '<ul class="unstyled">'
@@ -442,6 +443,7 @@ $('#form-wizard').on('submit', '#project-form', function (event) {
                 $('#step-nav a[href="#new-task"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#new-update"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#new-change"]').parent().removeClass('disabled');
+                $('#step-nav a[href="#view-project-page"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#save"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#save-version"]').parent().removeClass('disabled');
                 $('#step-nav #version-list').parent().removeClass('disabled');
@@ -797,9 +799,11 @@ $('#form-wizard').on('click', '#task-category-form [name="delete"]', function (e
     getProjectSummary(project_id);
 });
 
-$('#save-project').on('click', function(e) {
+$('#view-project-page').on('click', function(e) {
     e.preventDefault();
-    window.location = '/cpm/images/' + project_id + '/';
+    if (!($(this).parent().hasClass('disabled'))) {
+        window.location = '/cpm/projects/' + project_id + '/';
+    };
 });
 
 
