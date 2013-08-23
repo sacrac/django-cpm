@@ -105,8 +105,26 @@
                     </div>
                     <div class="span3">
                         <h3>Categories</h3>
+                        <select id="bundle-choices"></select>
                         <ul class="nav nav-list" id="task-category-list">
                         </ul>
+                    </div>
+                </div>
+
+                <div class="tab-pane" id="new-bundle">
+
+                    <div class="form-fixed">
+                        <div class="span7">
+                            <div class="instructions">
+                                <p class="lead">
+                                    Create Bundle
+                                </p>
+                                <p class="success-message">
+                                    New Bundle added!
+                                </p>
+                            </div>
+                            {% crispy bundle_form %}
+                        </div>
                     </div>
                 </div>
 
@@ -181,7 +199,10 @@
                 <a href="#new-task"><i class="icon-tasks"></i> <span>Tasks</span></a>
             </li>
             <li class="disabled">
-                <a href="#new-category"><i class="icon-tags"></i> <span>Categories</span></a>
+                <a href="#new-category"><i class="icon-tag"></i> <span>Categories</span></a>
+            </li>
+            <li class="disabled">
+                <a href="#new-bundle"><i class="icon-tags"></i> <span>Bundles</span></a>
             </li>
             <li class="disabled">
                 <a href="#new-update"><i class="icon-ok-circle"></i> <span>Updates</span></a>
@@ -226,6 +247,7 @@
     <script type="text/javascript">
         var task_form_url = "{% url 'tasks:task-form' %}";
         var category_form_url = "{% url 'tasks:task-category-form' %}";
+        var bundle_form_url = "{% url 'tasks:bundle-form' %}";
         var project_form_url = "{% url 'projects:project-form' %}";
         var update_form_url = "{% url 'updates:update-form' %}";
         var change_form_url = "{% url 'changes:change-form' %}";

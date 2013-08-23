@@ -338,6 +338,7 @@
         getProjectSummary({{ project.id }});
     });
 
+    var dev_list = [];
 
     function allDescendants (node) {
         var branch = '<div class="well"><div class="header">'
@@ -371,7 +372,7 @@
 
 
 
-        if (node.task_set) {
+        if (node.task_set.length > 0) {
             var task_list = node.task_set;
             $.each(task_list, function (key, value) {
                 {% if user.is_staff %}

@@ -110,12 +110,19 @@ def modify_used_item_list(p_tree, used_item_list):
     """
     for item in used_item_list:
         task_set = []
-        for task in p_tree[str(item['id'])]['task_set']:
-            task_set.append(p_tree[str(item['id'])]['task_set'][str(task)])
-        item['task_set'] = task_set
-        item['expense'] = p_tree[str(item['id'])]['expense']
-        item['price'] = p_tree[str(item['id'])]['price']
-        item['total'] = p_tree[str(item['id'])]['total']
+        if p_tree.has_key(str(item['id'])):
+            for task in p_tree[str(item['id'])]['task_set']:
+                task_set.append(p_tree[str(item['id'])]['task_set'][str(task)])
+            item['task_set'] = task_set
+            item['expense'] = p_tree[str(item['id'])]['expense']
+            item['price'] = p_tree[str(item['id'])]['price']
+            item['total'] = p_tree[str(item['id'])]['total']
+        else:
+            item['task_set'] = []
+            item['expense'] = 0
+            item['price'] = 0
+            item['total'] = 0
+
 
 
 def add_info_to_branch(tree, id, item):

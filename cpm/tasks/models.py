@@ -148,6 +148,12 @@ class TaskCategory(Slugged):
         for p in project.task_set.filter(category=self):
             total += p.expense
         return total
+
 reversion.register(TaskCategory, follow=['task_set'], exclude=["created, modified"])
 
 
+class CategoryBundle(Slugged):
+    categories = models.ManyToManyField(TaskCategory, null=True, blank=True, related_name='bundles')
+
+    def get_update_url(self):
+        return reverse('tasks:bundle-update', kwargs={'pk': self.pk})

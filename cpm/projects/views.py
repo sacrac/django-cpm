@@ -10,7 +10,6 @@ from django.utils.http import urlquote
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
-from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import FormMixin
 
 from django.core.urlresolvers import reverse_lazy, reverse
@@ -25,7 +24,7 @@ from jsonview.decorators import json_view
 
 from core.views import AjaxableResponseMixin
 from tasks.models import TaskCategory
-from tasks.forms import TaskForm, TaskCategoryForm
+from tasks.forms import TaskForm, TaskCategoryForm, CategoryBundleForm
 from updates.forms import UpdateForm
 from changes.forms import ChangeOrderForm
 
@@ -210,6 +209,7 @@ class ProjectWizardView(generic.FormView):
         context = {
             'task_form': TaskForm(),
             'task_category_form': TaskCategoryForm(),
+            'bundle_form': CategoryBundleForm(),
             'update_form': UpdateForm(),
             'change_form': ChangeOrderForm(),
             'project_image_form': ProjectImageForm(),
