@@ -328,6 +328,7 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
             console.log('Changing Tasks Too!')
         }
 
+
         $.getJSON('/cpm/tasks/category/alt/', function (data) {
             var list_data = [];
             var cat_list_data = [];
