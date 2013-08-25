@@ -289,6 +289,15 @@ class TaskCategoryListViewAlt(TaskCategoryListView):
             context['category_list'].append(get_r_branch(cat))
         return context
 
+
+def category_tree_list():
+    primary_cats = TaskCategory.objects.filter(parent=None).order_by("_order")
+    cat_list = {'category_list': []}
+    for cat in primary_cats:
+        cat_list['category_list'].append(get_r_branch(cat))
+    return cat_list
+
+
 @json_view
 def task_category_json(request, pk):
     category = get_object_or_404(TaskCategory, id=pk)

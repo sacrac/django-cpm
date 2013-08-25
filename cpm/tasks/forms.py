@@ -19,7 +19,6 @@ class TaskForm(forms.ModelForm):
             #'projected_completion_date': SelectDateWidget(),
             'completion_date': forms.HiddenInput(),
             'project': forms.HiddenInput(),
-            'changes': forms.HiddenInput(),
         }
 
     def __init__(self, *args, **kwargs):

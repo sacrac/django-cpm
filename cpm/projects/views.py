@@ -25,13 +25,13 @@ from jsonview.decorators import json_view
 from core.views import AjaxableResponseMixin
 from tasks.models import TaskCategory
 from tasks.forms import TaskForm, TaskCategoryForm, CategoryBundleForm
+from tasks.views import category_tree_list
 from updates.forms import UpdateForm
 from changes.forms import ChangeOrderForm
 
 from .forms import ProjectForm, ProjectFilterForm, ProjectImageForm
 from .models import Project, ProjectImage
-from .helpers import create_project_summary_tree
-
+from .helpers import get_used_branch_ids, create_used_item_list, modify_used_item_list, create_used_item_tree, sort_tree
 
 
 def get_dict_in_list_2(key, key0, value, value0, dict_list):
@@ -99,8 +99,67 @@ class VersionDetailJSONView(generic.DetailView):
 
         return context
 
+
+
+def create_project_object(project_id):
+
+    project = get_object_or_404(Project, pk=project_id)
+    version_list = reversion.get_for_object(project)[1:100]
+    versions = []
+    for version in version_list:
+        #instance_data = version.serialized_data.strip('[]')
+        timestamp = str(version.revision.date_created.isoformat())
+        print timestamp
+        compare_url = '%s?next=%s' % (reverse('projects:version-compare',
+                                              args=[version.revision_id, Revision.objects.latest('date_created').id]),
+                                      reverse('projects:project-detail', args=[project.id]))
+        versions.append({
+            'version': version.pk,
+            'created': timestamp,
+            'compare_url': compare_url
+        })
+    project_data = {
+        'id': project.id,
+        'title': project.title,
+        'title_url': urlquote(project.title),
+        'slug': project.slug,
+        'user': project.user.id,
+        'username': project.user.username,
+        'description': project.description,
+        'completion': project.completion,
+        'created': project.created.toordinal(),
+        'modified': project.modified.toordinal(),
+        'absolute_url': project.get_absolute_url(),
+        'update_url': project.get_update_url(),
+        'category_totals': project.get_project_category_totals(),
+        'versions': versions,
+        'price': project.get_project_price(),
+        'expense': project.get_project_expense(),
+        'total': project.get_project_total()
+
+    }
+    return project_data
+
+
+def create_project_summary_tree(project_id):
+    #TODO: FIX these explicit URLS
+    p = get_object_or_404(Project, pk=project_id)
+    p = p.get_project_category_totals()
+    print p
+    c = category_tree_list()['category_list']
+    used_branch_ids = get_used_branch_ids(p)
+    used_item_list = create_used_item_list(c, used_branch_ids)
+    print used_item_list
+    modify_used_item_list(p, used_item_list)
+    used_item_tree = create_used_item_tree(used_item_list)
+    used_item_tree = sort_tree(used_item_tree)
+    return used_item_tree
+
+
+
 @json_view
 def project_proposal(request, project_id):
+
     project_summary = create_project_summary_tree(project_id=project_id)
 
     return {'project_summary': project_summary}
@@ -115,40 +174,8 @@ class ProjectDetailJSONView(generic.DetailView):
 
     def get(self, request, *args, **kwargs):
         self.object = super(ProjectDetailJSONView, self).get_object()
-        version_list = reversion.get_for_object(self.object)[1:100]
-        versions = []
-        for version in version_list:
-            #instance_data = version.serialized_data.strip('[]')
-            timestamp = str(version.revision.date_created.isoformat()[:-13])
-            compare_url = '%s?next=%s' % (reverse('projects:version-compare',
-                                                 args=[version.revision_id, Revision.objects.latest('date_created').id]),
-                                                 reverse('projects:project-detail', args=[self.object.id]))
-            versions.append({
-                'version': version.pk,
-                'created': timestamp,
-                'compare_url': compare_url
-            })
 
-        context = {
-            'id': self.object.id,
-            'title': self.object.title,
-            'title_url': urlquote(self.object.title),
-            'slug': self.object.slug,
-            'user': self.object.user.id,
-            'username': self.object.user.username,
-            'description': self.object.description,
-            'completion': self.object.completion,
-            'created': self.object.created.toordinal(),
-            'modified': self.object.modified.toordinal(),
-            'absolute_url': self.object.get_absolute_url(),
-            'update_url': self.object.get_update_url(),
-            'category_totals': self.object.get_project_category_totals(),
-            'versions': versions,
-            'price': self.object.get_project_price(),
-            'expense': self.object.get_project_expense(),
-            'total': self.object.get_project_total()
-
-        }
+        context = create_project_object(self.object.id)
 
         return context
 
@@ -202,7 +229,7 @@ class ProjectListView(generic.ListView):
 class ProjectWizardView(generic.FormView):
     form_class = ProjectForm
     template_name = 'projects/project_form.html'
-    success_url = reverse_lazy('projects:project-list-super')
+    success_url = reverse_lazy('projects:project-wizard')
 
     def get_context_data(self, **kwargs):
 
@@ -228,6 +255,7 @@ class ProjectWizardView(generic.FormView):
 
     def form_valid(self, form):
         form.save()
+        self.success_url += '?project=%d' % form.instance.project_id
         return super(ProjectWizardView, self).form_valid(form)
 
 

@@ -670,7 +670,7 @@ $('#form-wizard').on('submit', '#update-form', function (event) {
                 $this.replaceWith(data['form_html']);
                 $this.find('.success-message').show();
                 update_id = data.pk;
-                showStep(6);
+                showStep(7);
             }
         },
         error: function () {
