@@ -96,9 +96,10 @@ def create_used_item_list(tree, used_branch_ids):
     branches = []
     for id in used_branch_ids:
         branch = get_branch_by_id(tree, id)
-        branches.append(branch)
-        if debug:
-            print branch['id']
+        if branch:
+            branches.append(branch)
+            if debug:
+                print branch['id']
     for branch in branches:
         branch['children'] = []
     return branches

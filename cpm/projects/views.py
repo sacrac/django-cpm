@@ -145,11 +145,13 @@ def create_project_summary_tree(project_id):
     #TODO: FIX these explicit URLS
     p = get_object_or_404(Project, pk=project_id)
     p = p.get_project_category_totals()
-    print p
     c = category_tree_list()['category_list']
     used_branch_ids = get_used_branch_ids(p)
     used_item_list = create_used_item_list(c, used_branch_ids)
-    print used_item_list
+    for item in used_item_list[:]:
+        if item['title'] == 'Deleted':
+            used_item_list.remove(item)
+
     modify_used_item_list(p, used_item_list)
     used_item_tree = create_used_item_tree(used_item_list)
     used_item_tree = sort_tree(used_item_tree)

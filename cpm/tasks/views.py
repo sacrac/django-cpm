@@ -215,6 +215,7 @@ class TaskUpdateView(generic.UpdateView):
 
 class TaskDeleteView(generic.DeleteView):
     model = Task
+    success_url = reverse_lazy('tasks:task-form')
 
     @json_view
     def dispatch(self, *args, **kwargs):
@@ -228,6 +229,11 @@ class TaskDeleteView(generic.DeleteView):
 
     def form_invalid(self, form):
         return {'success': False}
+
+    def delete(self, request, *args, **kwargs):
+        self.object = super(TaskDeleteView, self).get_object()
+        self.object.delete()
+        return {'success':True}
 
 
 class TaskCategoryListView(generic.ListView):
@@ -373,6 +379,7 @@ class TaskCategoryUpdateView(generic.UpdateView):
 
 class TaskCategoryDeleteView(generic.DeleteView):
     model = TaskCategory
+    success_url = reverse_lazy('tasks:task-category-list')
 
     @json_view
     def dispatch(self, *args, **kwargs):
@@ -381,13 +388,16 @@ class TaskCategoryDeleteView(generic.DeleteView):
     def form_valid(self, form):
         #TODO: Form processing needed
         form.save()
-        context = {'success': True}
-        return context
+        return {'success': True}
 
     def form_invalid(self, form):
         print form
         return {'success': False}
 
+    def delete(self, request, *args, **kwargs):
+        self.object = super(TaskCategoryDeleteView, self).get_object()
+        self.object.delete()
+        return {'success':True}
 
 def get_descendant_ids(branch):
     children = branch.children.all()
@@ -509,6 +519,7 @@ class CategoryBundleUpdateView(generic.UpdateView):
 
 class CategoryBundleDeleteView(generic.DeleteView):
     model = CategoryBundle
+    success_url = reverse_lazy('tasks:bundle-list')
 
     @json_view
     def dispatch(self, *args, **kwargs):
@@ -522,3 +533,8 @@ class CategoryBundleDeleteView(generic.DeleteView):
 
     def form_invalid(self, form):
         return {'success': False}
+
+    def delete(self, request, *args, **kwargs):
+        self.object = super(CategoryBundleDeleteView, self).get_object()
+        self.object.delete()
+        return {'success':True}

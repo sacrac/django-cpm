@@ -734,52 +734,6 @@ $('#form-wizard').on('submit', '#project-image-form', function (event) {
 });
 
 
-function editWizardItem(list_id) {
-    $(list_id).on('click', 'a', function (event) {
-        event.preventDefault();
-        var $this = $(this);
-        $(list_id + ' *').removeClass('active');
-
-        if ($this.is('[href*="category"]')) {
-            showStep(3);
-            getTaskCategoryForm($(this).attr('href'));
-        }
-        else {
-            showStep(2);
-            getTaskForm($(this).attr('href'));
-        }
-
-        $this.parent().addClass('active');
-    });
-
-}
-editWizardItem('#task-category-list');
-editWizardItem('#task-list');
-editWizardItem('#project-summary');
-
-
-function getWizardForm(step, formUrl) {
-    $.getJSON(formUrl, function (data) {
-        $('#' + step + '-form').replaceWith(data['form_html']);
-    });
-
-}
-
-function getProjectForm(projectUrl) {
-    $.getJSON(projectUrl, function (data) {
-        $('#project-form').replaceWith(data['form_html']);
-    });
-}
-function getTaskForm(taskUrl) {
-    $.getJSON(taskUrl, function (data) {
-        $('#task-form').replaceWith(data['form_html']);
-    });
-}
-function getTaskCategoryForm(taskUrl) {
-    $.getJSON(taskUrl, function (data) {
-        $('#task-category-form').replaceWith(data['form_html']);
-    });
-}
 
 
 function showStep(step) {
@@ -867,13 +821,62 @@ $('#form-wizard').on('click', '#task-category-form [name="cancel"]', function (e
     getProjectSummary(project_id);
 });
 
-function deleteWizardItem(deleteUrl) {
+function editWizardItem(list_id) {
+    $(list_id).on('click', 'a', function (event) {
+        event.preventDefault();
+        var $this = $(this);
+        $(list_id + ' *').removeClass('active');
+
+        if ($this.is('[href*="category"]')) {
+            showStep(3);
+            getTaskCategoryForm($(this).attr('href'));
+        }
+        else {
+            showStep(2);
+            getTaskForm($(this).attr('href'));
+        }
+
+        $this.parent().addClass('active');
+    });
+
+}
+editWizardItem('#task-category-list');
+editWizardItem('#task-list');
+editWizardItem('#project-summary');
+
+
+function getWizardForm(form_id, formUrl) {
+    $.getJSON(formUrl, function (data) {
+        $('#' + form_id).replaceWith(data['form_html']);
+    });
+}
+
+function getProjectForm(projectUrl) {
+    $.getJSON(projectUrl, function (data) {
+        $('#project-form').replaceWith(data['form_html']);
+    });
+}
+function getTaskForm(taskUrl) {
+    $.getJSON(taskUrl, function (data) {
+        $('#task-form').replaceWith(data['form_html']);
+    });
+}
+function getTaskCategoryForm(taskUrl) {
+    $.getJSON(taskUrl, function (data) {
+        $('#task-category-form').replaceWith(data['form_html']);
+    });
+}
+function deleteWizardItem(deleteUrl, form_id, form_url) {
     $.ajax({
         url: deleteUrl,
         type: 'POST',
         data: 'csrfmiddlewaretoken=' + getCookie('csrftoken'),
         success: function(data) {
-            alert('deleted');
+            if (data['success']){
+
+                getWizardForm(form_id, form_url);
+                getProjectSummary(project_id);
+            }
         }
     });
 }
@@ -883,25 +886,19 @@ $('#form-wizard').on('click', '#task-form [name="delete"]', function (event) {
     event.preventDefault();
     var item_id = $('#task-form').attr('action').split('/').slice(-2)[0];
     var deleteUrl = '/cpm/tasks/delete/' + item_id + '/';
-    deleteWizardItem(deleteUrl);
-    getWizardForm('task', task_form_url);
-    getProjectSummary(project_id);
+    deleteWizardItem(deleteUrl, 'task-form', task_form_url);
 });
 $('#form-wizard').on('click', '#task-category-form [name="delete"]', function (event) {
     event.preventDefault();
     var item_id = $('#task-category-form').attr('action').split('/').slice(-2)[0];
     var deleteUrl = '/cpm/tasks/category/delete/' + item_id + '/';
-    deleteWizardItem(deleteUrl);
-    getWizardForm('task-category', category_form_url);
-    getProjectSummary(project_id);
+    deleteWizardItem(deleteUrl, 'task-category-form', category_form_url);
 });
 $('#form-wizard').on('click', '#category-bundle-form [name="delete"]', function (event) {
     event.preventDefault();
     var item_id = $('#category-bundle-form').attr('action').split('/').slice(-2)[0];
     var deleteUrl = '/cpm/tasks/category/bundle/delete/' + item_id + '/';
-    deleteWizardItem(deleteUrl);
-    getWizardForm('category-bundle', bundle_form_url);
-    getProjectSummary(project_id);
+    deleteWizardItem(deleteUrl, 'category-bundle-form', bundle_form_url);
 });
 
 $('#view-project-page').on('click', function(e) {

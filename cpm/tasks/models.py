@@ -9,10 +9,12 @@ from core.models import Slugged, base_concrete_model, DateStamp
 from projects.models import Project
 import reversion
 
+def get_sentinel_category():
+    return TaskCategory.objects.get_or_create(title='Deleted')[0]
 
 class Task(Slugged):
     project = models.ForeignKey(Project)
-    category = models.ForeignKey('TaskCategory', blank=True, null=True, on_delete=models.SET_NULL)
+    category = models.ForeignKey('TaskCategory', blank=True, null=True, on_delete=models.SET(get_sentinel_category))
     projected_completion_date = models.DateField(_("Projected Completion Date"),
                                                  blank=True, null=True)
     completion_date = models.DateField(_("Actual Completion Date"),
