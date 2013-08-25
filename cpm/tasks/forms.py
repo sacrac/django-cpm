@@ -86,7 +86,8 @@ class TaskCategoryForm(forms.ModelForm):
                 Div(
                     FormActions(
                         Submit('submit', 'Submit', css_class="btn-primary"),
-                        Button('cancel', 'Cancel')
+                        Button('cancel', 'Cancel'),
+                        Button('delete', 'Delete')
                     )
                 )
             )
@@ -119,7 +120,8 @@ class CategoryBundleForm(forms.ModelForm):
                 Div(
                     FormActions(
                         Submit('submit', 'Submit', css_class="btn-primary"),
-                        Button('cancel', 'Cancel')
+                        Button('cancel', 'Cancel'),
+                        Button('delete', 'Delete')
                     )
                 )
             )

@@ -20,6 +20,7 @@ from core.views import AjaxableResponseMixin
 
 from projects.models import Project
 from changes.models import ChangeOrder
+from projects.helpers import unique_items
 
 from .models import Task, TaskCategory, CategoryBundle
 from .forms import TaskForm, TaskCategoryForm, CategoryBundleForm
@@ -372,7 +373,37 @@ class TaskCategoryUpdateView(generic.UpdateView):
 
 class TaskCategoryDeleteView(generic.DeleteView):
     model = TaskCategory
-    success_url = reverse_lazy('tasks:task-list')
+
+    @json_view
+    def dispatch(self, *args, **kwargs):
+        return super(TaskCategoryDeleteView, self).dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        #TODO: Form processing needed
+        form.save()
+        context = {'success': True}
+        return context
+
+    def form_invalid(self, form):
+        print form
+        return {'success': False}
+
+
+def get_descendant_ids(branch):
+    children = branch.children.all()
+    child_ids = [branch.id]
+    if children:
+        for child in children:
+            child_ids.extend(get_descendant_ids(child))
+    return child_ids
+
+def remove_duplicate_ids(id_array):
+    ids_to_remove = []
+    for id_set in id_array:
+        for id_set2 in id_array:
+            if id_set[0] in id_set2 and id_set != id_set2:
+                ids_to_remove.append(id_set[0])
+    return ids_to_remove
 
 
 class CategoryBundleView(TaskCategoryListViewAlt, SingleObjectMixin):
@@ -384,8 +415,16 @@ class CategoryBundleView(TaskCategoryListViewAlt, SingleObjectMixin):
 
     def get_queryset(self):
         self.primary_categories = TaskCategory.objects.filter(
-            Q(parent=None) & Q(bundles__id=self.object.id))
-        return self.primary_categories
+            bundles__id=self.object.id)
+        self.bundled_categories = []
+        cat_ids = [get_descendant_ids(cat) for cat in self.primary_categories]
+        duplicates = remove_duplicate_ids(cat_ids)
+        print duplicates
+        for cat in self.primary_categories[:]:
+            if cat.id not in duplicates:
+                self.bundled_categories.append(cat)
+        print self.bundled_categories
+        return self.bundled_categories
 
 
 class CategoryBundleListView(generic.ListView):
@@ -466,3 +505,20 @@ class CategoryBundleUpdateView(generic.UpdateView):
         form_html = render_crispy_form(form)
         context = {'form_html': form_html}
         return context
+
+
+class CategoryBundleDeleteView(generic.DeleteView):
+    model = CategoryBundle
+
+    @json_view
+    def dispatch(self, *args, **kwargs):
+        return super(CategoryBundleDeleteView, self).dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        #TODO: Form processing needed
+        form.save()
+        context = {'success': True}
+        return context
+
+    def form_invalid(self, form):
+        return {'success': False}

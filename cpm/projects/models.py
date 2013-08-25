@@ -80,9 +80,7 @@ class Project(DateStamp, Slugged):
         cat_dict = {}
         all_tasks = self.task_set.select_related().all().order_by('_order')
         for task in all_tasks:
-            try:
-                cat_dict[task.category.id]
-            except KeyError:
+            if task.category and not cat_dict.has_key(task.category.id):
                 cat_dict[task.category.id] = task.category
         for cat in cat_dict:
             cat_exp_total = self.get_category_expense(cat_dict[cat])

@@ -12,7 +12,7 @@ import reversion
 
 class Task(Slugged):
     project = models.ForeignKey(Project)
-    category = models.ForeignKey('TaskCategory')
+    category = models.ForeignKey('TaskCategory', blank=True, null=True, on_delete=models.SET_NULL)
     projected_completion_date = models.DateField(_("Projected Completion Date"),
                                                  blank=True, null=True)
     completion_date = models.DateField(_("Actual Completion Date"),
@@ -75,7 +75,7 @@ reversion.register(Task)
 
 class TaskCategory(Slugged):
     parent = models.ForeignKey("TaskCategory", blank=True, null=True,
-                               related_name="children")
+                               related_name="children", on_delete=models.SET_NULL)
     ascendants = models.CharField(editable=False, max_length=100, null=True)
     order = models.IntegerField(blank=True, null=True)
     description = models.TextField(blank=True)

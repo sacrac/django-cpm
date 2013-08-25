@@ -889,7 +889,18 @@ $('#form-wizard').on('click', '#task-form [name="delete"]', function (event) {
 });
 $('#form-wizard').on('click', '#task-category-form [name="delete"]', function (event) {
     event.preventDefault();
-
+    var item_id = $('#task-category-form').attr('action').split('/').slice(-2)[0];
+    var deleteUrl = '/cpm/tasks/category/delete/' + item_id + '/';
+    deleteWizardItem(deleteUrl);
+    getWizardForm('task-category', category_form_url);
+    getProjectSummary(project_id);
+});
+$('#form-wizard').on('click', '#category-bundle-form [name="delete"]', function (event) {
+    event.preventDefault();
+    var item_id = $('#category-bundle-form').attr('action').split('/').slice(-2)[0];
+    var deleteUrl = '/cpm/tasks/category/bundle/delete/' + item_id + '/';
+    deleteWizardItem(deleteUrl);
+    getWizardForm('category-bundle', bundle_form_url);
     getProjectSummary(project_id);
 });
 
