@@ -9,6 +9,7 @@ var update_id;
 var change_order_id;
 var project_summary_json = {};
 var task_form_url;
+var bundle_form_url;
 var category_form_url;
 var project_form_url;
 var update_form_url;
@@ -108,6 +109,7 @@ $(function () {
         else {
             getProjectSummary(project_id);
             $('#step-nav a[href="#new-category"]').parent().removeClass('disabled');
+            $('#step-nav a[href="#new-bundle"]').parent().removeClass('disabled');
             $('#step-nav a[href="#new-update"]').parent().removeClass('disabled');
             $('#step-nav a[href="#new-change"]').parent().removeClass('disabled');
             $('#step-nav a[href="#view-project-page"]').parent().removeClass('disabled');
@@ -117,6 +119,7 @@ $(function () {
             // Have to replace the OG form, therwise 2 csrf tokens are sent
             getProjectForm(project_form_url);
             getTaskCategoryForm(category_form_url);
+            getBundleChoices();
         }
     }
 });
@@ -266,6 +269,7 @@ $('#task-category-list').on("sortupdate", function (event, ui) {
 
 var list1;
 var data_list = [];
+var project_data;
 function getProjectSummary(project_id, catsToo, tasksToo) {
     catsToo = catsToo || 0;
     console.log(catsToo);
@@ -276,7 +280,7 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
 
     } else {
     var JSON_url = '/cpm/projects/json/' + project_id + '/';
-    var project_data = {};
+    project_data = {};
     var task_data = [];
     //var task_list = [];
     $.getJSON(JSON_url, function (data) {
@@ -323,6 +327,7 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
             $('#task-list').html(task_data.join(''));
             console.log('Changing Tasks Too!')
         }
+
 
         $.getJSON('/cpm/tasks/category/alt/', function (data) {
             var list_data = [];
@@ -380,15 +385,6 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
     }
 
 }
-$('#project-summary').parent().on('click', '.toggle-table', function(e) {
-    if ($(this).find('i').hasClass('icon-collapse-alt')) {
-        $(this).parent().parent().find('.collapse').collapse('hide');
-        $(this).parent().parent().find('i').removeClass('icon-collapse-alt icon-expand-alt').addClass('icon-expand-alt')
-    } else {
-        $(this).parent().parent().find('.collapse').collapse('show');
-        $(this).parent().parent().find('i').removeClass('icon-collapse-alt icon-expand-alt').addClass('icon-collapse-alt')
-    }
-});
 
 
 function getProjectCOSummary(co_id) {
@@ -409,6 +405,60 @@ function getProjectCOSummary(co_id) {
     });
 }
 
+function getCatBundle(bundle_id) {
+    var bundle_url = '/cpm/tasks/category/alt/';
+    if (!(bundle_id == 'all')) {
+        bundle_url = '/cpm/tasks/category/bundle/' + bundle_id + '/';
+    }
+    $.getJSON(bundle_url, function (data) {
+        var list_data = [];
+        var cat_list_data = [];
+        project_summary_json = data['category_list'];
+        var project_summary_list = [];
+        $.each(data['category_list'], function (key, value) {
+            project_summary_list.push(value);
+        });
+        project_summary_list = project_summary_list.sort(function (a, b) {
+            if (a.order > b.order) return 1;
+            if (a.order < b.order) return -1;
+            return 0;
+        });
+        list1 = project_summary_list;
+        $.each(project_summary_list, function (key, value) {
+            var list_item = allDescendants(value, project_data);
+            var cat_list_item = allDescendants(value, []);
+            list_data.push(list_item);
+            cat_list_data.push(cat_list_item);
+        });
+        $('#task-category-list').html(cat_list_data.join(''));
+    });
+}
+
+function getBundleChoices() {
+    $.getJSON('/cpm/tasks/category/bundle/', function(data) {
+        var bundles = [];
+        $.each(data, function(key, value) {
+            bundles.push('<option value="' + value.id + '">' + value.title + '</option>');
+        });
+        $('#bundle-choices').html(bundles.join(''));
+        $('#bundle-choices').prepend('<option value="all" selected="selected">All Categories</option>');
+    });
+}
+
+$('#bundle-choices').on('change', function(e) {
+    var bundle = $(this).val();
+    getCatBundle(bundle);
+});
+
+$('#project-summary').parent().on('click', '.toggle-table', function(e) {
+    if ($(this).find('i').hasClass('icon-collapse-alt')) {
+        $(this).parent().parent().find('.collapse').collapse('hide');
+        $(this).parent().parent().find('i').removeClass('icon-collapse-alt icon-expand-alt').addClass('icon-expand-alt')
+    } else {
+        $(this).parent().parent().find('.collapse').collapse('show');
+        $(this).parent().parent().find('i').removeClass('icon-collapse-alt icon-expand-alt').addClass('icon-collapse-alt')
+    }
+});
 
 
 $('#form-wizard').on('submit', '#project-form', function (event) {
@@ -441,6 +491,7 @@ $('#form-wizard').on('submit', '#project-form', function (event) {
                 //console.log('PID:  ' + data['pk']);
                 $('#step-nav a[href="#new-category"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#new-task"]').parent().removeClass('disabled');
+                $('#step-nav a[href="#new-bundle"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#new-update"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#new-change"]').parent().removeClass('disabled');
                 $('#step-nav a[href="#view-project-page"]').parent().removeClass('disabled');
@@ -556,6 +607,40 @@ $('#form-wizard').on('submit', '#task-category-form', function (event) {
     return false;
 });
 
+$('#form-wizard').on('submit', '#category-bundle-form', function (event) {
+    var $this = $(this);
+    event.preventDefault();
+    var $this_title = $this.find('#id_title').val();
+    var this_url;
+    var cookie = 'csrfmiddlewaretoken=' + getCookie('csrftoken') + '&';
+
+    if (!$(this).attr('action')) {
+        this_url = bundle_form_url;
+    } else {
+        this_url = $(this).attr('action');
+    }
+
+    $.ajax({
+        url: this_url,
+        type: "POST",
+        data: cookie + $(this).serialize(),
+        success: function (data) {
+            if (!(data['success'])) {
+                $this.replaceWith(data['form_html']);
+            }
+            else {
+                $this.replaceWith(data['form_html']);
+                getBundleChoices();
+            }
+        },
+        error: function () {
+            $this.find('.error-message').show();
+            alert('error')
+        }
+    });
+    return false;
+});
+
 $('#form-wizard').on('submit', '#update-form', function (event) {
     var $this = $(this);
     event.preventDefault();
@@ -585,7 +670,7 @@ $('#form-wizard').on('submit', '#update-form', function (event) {
                 $this.replaceWith(data['form_html']);
                 $this.find('.success-message').show();
                 update_id = data.pk;
-                showStep(6);
+                showStep(7);
             }
         },
         error: function () {
@@ -709,12 +794,15 @@ function showStep(step) {
         $('#step-nav a[href="#new-category"]').tab('show');
     }
     else if (step == 4) {
-        $('#step-nav a[href="#new-update"]').tab('show');
+        $('#step-nav a[href="#new-bundle"]').tab('show');
     }
     else if (step == 5) {
-        $('#step-nav a[href="#new-change"]').tab('show');
+        $('#step-nav a[href="#new-update"]').tab('show');
     }
     else if (step == 6) {
+        $('#step-nav a[href="#new-change"]').tab('show');
+    }
+    else if (step == 7) {
         $('#step-nav a[href="#save"]').tab('show');
     }
 }
@@ -731,6 +819,12 @@ $('#step-nav a[href="#new-category"]').click(function (e) {
     }
 });
 $('#step-nav a[href="#new-task"]').click(function (e) {
+    e.preventDefault();
+    if (!($(this).parent().is('.disabled'))) {
+        $(this).tab('show');
+    }
+});
+$('#step-nav a[href="#new-bundle"]').click(function (e) {
     e.preventDefault();
     if (!($(this).parent().is('.disabled'))) {
         $(this).tab('show');

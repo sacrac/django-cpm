@@ -21,6 +21,7 @@ class Project(DateStamp, Slugged):
     description = models.TextField(blank=True)
     completion = models.IntegerField(default=0)
     start_time = models.DateField(blank=True, null=True)
+    bundles = models.ManyToManyField('tasks.CategoryBundle', blank=True, null=True)
 
     #blueprints
     #drawings

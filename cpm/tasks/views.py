@@ -1,14 +1,17 @@
 import json
 from crispy_forms.utils import render_crispy_form
 from django.contrib.auth.models import User
+from django.db.models import Q
 
 from django.shortcuts import render_to_response, render, get_object_or_404
 from django.http import HttpResponseRedirect
 from django.utils.http import urlquote
 from django.views import generic
+from django.views.generic.detail import SingleObjectMixin
 from django.core.urlresolvers import reverse_lazy
 from django.http import HttpResponse
 from django.forms.models import inlineformset_factory, modelformset_factory
+
 from braces.views import JSONResponseMixin
 
 from jsonview.decorators import json_view
@@ -18,8 +21,8 @@ from core.views import AjaxableResponseMixin
 from projects.models import Project
 from changes.models import ChangeOrder
 
-from .models import Task, TaskCategory
-from .forms import TaskForm, TaskCategoryForm
+from .models import Task, TaskCategory, CategoryBundle
+from .forms import TaskForm, TaskCategoryForm, CategoryBundleForm
 
 
 @json_view
@@ -277,9 +280,7 @@ def get_r_branch(tree):
 
 
 class TaskCategoryListViewAlt(TaskCategoryListView):
-    def get_queryset(self):
-        self.primary_categories = TaskCategory.objects.filter(parent=None).order_by("_order")
-        return self.primary_categories
+    queryset = TaskCategory.objects.filter(parent=None).order_by("_order")
 
     def get(self, request, *args, **kwargs):
         self.queryset = super(TaskCategoryListViewAlt, self).get_queryset()
@@ -287,6 +288,14 @@ class TaskCategoryListViewAlt(TaskCategoryListView):
         for cat in self.get_queryset():
             context['category_list'].append(get_r_branch(cat))
         return context
+
+
+def category_tree_list():
+    primary_cats = TaskCategory.objects.filter(parent=None).order_by("_order")
+    cat_list = {'category_list': []}
+    for cat in primary_cats:
+        cat_list['category_list'].append(get_r_branch(cat))
+    return cat_list
 
 
 @json_view
@@ -364,3 +373,96 @@ class TaskCategoryUpdateView(generic.UpdateView):
 class TaskCategoryDeleteView(generic.DeleteView):
     model = TaskCategory
     success_url = reverse_lazy('tasks:task-list')
+
+
+class CategoryBundleView(TaskCategoryListViewAlt, SingleObjectMixin):
+    model = CategoryBundle
+
+    def get(self, request, *args, **kwargs):
+        self.object = get_object_or_404(CategoryBundle, pk=kwargs['pk'])
+        return super(CategoryBundleView, self).get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        self.primary_categories = TaskCategory.objects.filter(
+            Q(parent=None) & Q(bundles__id=self.object.id))
+        return self.primary_categories
+
+
+class CategoryBundleListView(generic.ListView):
+    #TODO: Might include category info here, for now, keeping it light-weight
+    model = CategoryBundle
+
+    @json_view
+    def dispatch(self, *args, **kwargs):
+        return super(CategoryBundleListView, self).dispatch(*args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        self.queryset = super(CategoryBundleListView, self).get_queryset()
+        context = []
+        for bundle in self.get_queryset():
+            context.append({
+                'id': bundle.id,
+                'title': bundle.title,
+                'title_url': urlquote(bundle.title),
+                #'update_url': bundle.get_update_url(),
+                #'order': bundle.order,
+            })
+
+        return context
+
+
+class CategoryBundleFormView(generic.CreateView):
+    model = CategoryBundle
+    form_class = CategoryBundleForm
+
+    @json_view
+    def dispatch(self, *args, **kwargs):
+        return super(CategoryBundleFormView, self).dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        #TODO: Form processing needed
+        form.save()
+        update_url = form.instance.get_update_url()
+        form_html = render_crispy_form(self.form_class())
+        context = {'success': True, 'update_url': update_url, 'form_html': form_html,
+                   'pk': form.instance.id}
+        return context
+
+    def form_invalid(self, form):
+        form_html = render_crispy_form(form)
+        return {'success': False, 'form_html': form_html}
+
+    def get(self, request, *args, **kwargs):
+        form_html = render_crispy_form(self.form_class())
+        context = {'form_html': form_html}
+        return context
+
+
+class CategoryBundleUpdateView(generic.UpdateView):
+    model = CategoryBundle
+    form_class = CategoryBundleForm
+
+    @json_view
+    def dispatch(self, *args, **kwargs):
+        return super(CategoryBundleUpdateView, self).dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        #TODO: Form processing needed
+        form.save()
+        update_url = self.object.get_update_url()
+        form_html = render_crispy_form(self.form_class())
+        context = {'success': True, 'update_url': update_url, 'form_html': form_html}
+        return context
+
+    def form_invalid(self, form):
+        form.helper.form_action = self.object.get_update_url()
+        form_html = render_crispy_form(form)
+        return {'success': False, 'form_html': form_html}
+
+    def get(self, request, *args, **kwargs):
+        self.object = super(CategoryBundleUpdateView, self).get_object()
+        form = self.form_class(instance=self.object)
+        form.helper.form_action = self.object.get_update_url()
+        form_html = render_crispy_form(form)
+        context = {'form_html': form_html}
+        return context

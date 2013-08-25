@@ -110,12 +110,23 @@ def modify_used_item_list(p_tree, used_item_list):
     """
     for item in used_item_list:
         task_set = []
-        for task in p_tree[str(item['id'])]['task_set']:
-            task_set.append(p_tree[str(item['id'])]['task_set'][str(task)])
-        item['task_set'] = task_set
-        item['expense'] = p_tree[str(item['id'])]['expense']
-        item['price'] = p_tree[str(item['id'])]['price']
-        item['total'] = p_tree[str(item['id'])]['total']
+        if p_tree.has_key(item['id']):
+            for task in p_tree[item['id']]['task_set']:
+                task_set.append(p_tree[item['id']]['task_set'][task])
+                print task
+                print p_tree[item['id']]['task_set'][task]
+            item['task_set'] = task_set
+            print task_set
+            item['expense'] = p_tree[item['id']]['expense']
+            item['price'] = p_tree[item['id']]['price']
+            item['total'] = p_tree[item['id']]['total']
+        else:
+            item['task_set'] = []
+            item['expense'] = 0
+            item['price'] = 0
+            item['total'] = 0
+            print 'could not find target %d' % item['id']
+
 
 
 def add_info_to_branch(tree, id, item):
@@ -200,16 +211,4 @@ def create_used_item_tree(used_item_list):
     return used_item_tree
 
 
-def create_project_summary_tree(c_url='http://127.0.0.1:8000/cpm/tasks/category/alt/',
-                                p_url='http://127.0.0.1:8000/cpm/projects/json/',
-                                project_id=1):
-    #TODO: FIX these explicit URLS
-    p = json.load(urllib.URLopener().open(p_url + str(project_id) + '/'))['category_totals']
-    c = json.load(urllib.URLopener().open(c_url))['category_list']
-    used_branch_ids = get_used_branch_ids(p)
-    used_item_list = create_used_item_list(c, used_branch_ids)
-    modify_used_item_list(p, used_item_list)
-    used_item_tree = create_used_item_tree(used_item_list)
-    used_item_tree = sort_tree(used_item_tree)
-    return used_item_tree
 

@@ -6,7 +6,7 @@ from crispy_forms.layout import *
 from crispy_forms.bootstrap import PrependedText
 from django.forms.extras.widgets import SelectDateWidget
 
-from .models import Task, TaskCategory
+from .models import Task, TaskCategory, CategoryBundle
 
 
 class TaskForm(forms.ModelForm):
@@ -19,7 +19,6 @@ class TaskForm(forms.ModelForm):
             #'projected_completion_date': SelectDateWidget(),
             'completion_date': forms.HiddenInput(),
             'project': forms.HiddenInput(),
-            'changes': forms.HiddenInput(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -92,6 +91,40 @@ class TaskCategoryForm(forms.ModelForm):
                 )
             )
         )
+
+
+class CategoryBundleForm(forms.ModelForm):
+    class Meta:
+        model = CategoryBundle
+        fields = ['title', 'slug', 'categories']
+        widgets = {
+            'slug': forms.HiddenInput(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CategoryBundleForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.help_text_inline = True
+        #self.helper.form_tag = False
+        self.helper.form_id = 'category-bundle-form'
+        #self.helper.form_class = 'span4'
+        #self.helper.form_action = 'tasks:task-category-form'
+        self.helper.layout = Layout(
+            Div(
+                Div(
+                    'slug',
+                    Field('title', css_class="input-block-level"),
+                    'categories'
+                ),
+                Div(
+                    FormActions(
+                        Submit('submit', 'Submit', css_class="btn-primary"),
+                        Button('cancel', 'Cancel')
+                    )
+                )
+            )
+        )
+
 
 '''
     def clean(self):

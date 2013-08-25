@@ -12,8 +12,10 @@ class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = ['user', 'title', 'slug', 'description', 'start_time', 'completion']
+        #, 'bundles']
         widgets = {
             'slug': forms.HiddenInput(),
+            #'bundles': forms.HiddenInput(),
             'completion': forms.HiddenInput(),
             'start_time': forms.HiddenInput(),
         }
@@ -30,6 +32,7 @@ class ProjectForm(forms.ModelForm):
             Div(
                 Div(
                     'slug',
+                    #'bundles',
                     Field('user'),
                     Field('title'),
                     Field('start_time'),
