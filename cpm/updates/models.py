@@ -28,8 +28,13 @@ class Update(DateStamp, Slugged):
                 task.completion_date = now().date()
                 task.save()
 
+    def project_images(self):
+        return self.project.project_images.filter(update=self)
+
+
 
 class UpdateImage(Slugged):
+    #TODO: REMOVE THIS
     update = models.ForeignKey(Update, related_name="update_images")
     image = models.ImageField(max_length=200, upload_to='updates')
 

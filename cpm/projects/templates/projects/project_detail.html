@@ -96,9 +96,9 @@
 
                                 <div class="span6">
 
-                                {% if update.update_images.all %}
+                                {% if update.project_images.all %}
 
-                                    {% for img in update.update_images.all %}
+                                    {% for img in update.project_images.all %}
 
                                     {% if forloop.first %}
                                     <img class="thumbnail" src="{{ img.image.url }}">

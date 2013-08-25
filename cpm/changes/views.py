@@ -49,7 +49,10 @@ class ChangeOrderFormView(generic.CreateView):
         print project.id
         with reversion.create_revision():
             project.save()
-            reversion.set_comment('Pre Change Order: ' + form.instance.title)
+            reversion.set_comment('{"model": "changes.ChangeOrder", "id": %d}' % form.instance.id)
+            # trying to reference this using a this change order?
+            # reversion.get_for_object_reference(Project, this_change_order.project_id).get(
+            #       Q(revision__comment__contains='156') & Q(revision__comment__contains='changes.ChangeOrder'))
         form_html = render_crispy_form(self.form_class())
         update_url = form.instance.get_update_url()
         context = {'success': True, 'form_html': form_html, 'pk': form.instance.id, 'update_url': update_url}
@@ -79,7 +82,7 @@ class ChangeOrderProjectFormView(generic.CreateView):
         print project.id
         with reversion.create_revision():
             project.save()
-            reversion.set_comment('Pre Change Order: ' + form.instance.title)
+            reversion.set_comment("{'model': 'changes.ChangeOrder', 'id': %d}" % form.instance.id)
 
         return HttpResponseRedirect(redirect_url)
 
