@@ -55,7 +55,8 @@ class ChangeOrderFormView(generic.CreateView):
             #       Q(revision__comment__contains='156') & Q(revision__comment__contains='changes.ChangeOrder'))
         form_html = render_crispy_form(self.form_class())
         update_url = form.instance.get_update_url()
-        context = {'success': True, 'form_html': form_html, 'pk': form.instance.id, 'update_url': update_url}
+        context = {'success': True, 'form_html': form_html, 'pk': form.instance.id,
+                   'update_url': update_url, 'title': form.instance.title}
         #return HttpResponseRedirect(reverse_lazy('updates:update-images-formset', kwargs={'update_id': form.instance.id}))
         return context
 

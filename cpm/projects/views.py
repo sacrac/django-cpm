@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render
 from django.views import generic
 from django.views.generic.edit import FormMixin
+from django.views.generic.detail import SingleObjectMixin
 
 from django.core.urlresolvers import reverse_lazy, reverse
 from django.http import HttpResponse, HttpResponseRedirect
@@ -235,7 +236,8 @@ class ProjectWizardView(generic.FormView):
 
     def get_context_data(self, **kwargs):
 
-        context = {
+        context = super(ProjectWizardView, self).get_context_data(**kwargs)
+        context.update({
             'task_form': TaskForm(),
             'task_category_form': TaskCategoryForm(),
             'bundle_form': CategoryBundleForm(),
@@ -243,9 +245,9 @@ class ProjectWizardView(generic.FormView):
             'change_form': ChangeOrderForm(),
             'project_image_form': ProjectImageForm(),
             'task_categories': TaskCategory.objects.all().order_by('order')
-        }
+        })
         context.update(kwargs)
-        return super(ProjectWizardView, self).get_context_data(**context)
+        return context
 
     def post(self, request, *args, **kwargs):
         if "save_project_image" in request.POST:
@@ -259,6 +261,37 @@ class ProjectWizardView(generic.FormView):
         form.save()
         self.success_url += '?project=%d' % form.instance.project_id
         return super(ProjectWizardView, self).form_valid(form)
+
+
+class ProjectWizardDetailView(ProjectWizardView, SingleObjectMixin):
+    model = Project
+    formset_class = inlineformset_factory(Project, ProjectImage, form=ProjectImageForm, can_delete=False, extra=1)
+
+    def get_context_data(self, **kwargs):
+        self.object = super(ProjectWizardDetailView, self).get_object()
+        formset = self.formset_class(instance=self.object, queryset=self.object.project_images.get_empty_query_set())
+        #NOTE: The queryset is empty so that only new images can be added. Might want a new tab to manage images:
+        # just reuse this and remove the queryset then add a prefix
+        #manage_formset = self.formset_class(instance=self.object)
+        context = super(ProjectWizardDetailView, self).get_context_data(**kwargs)
+        context['project_image_formset'] = formset
+        context.update(kwargs)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = super(ProjectWizardDetailView, self).get_object()
+        if "save_project_image_set" in request.POST:
+            formset = self.formset_class(request.POST, request.FILES, instance=self.object)
+            if formset.is_valid():
+                return self.form_valid(formset)
+            else:
+                return self.form_invalid(formset)
+
+    def form_valid(self, form):
+        form.save()
+        self.success_url = reverse_lazy('projects:project-wizard-detail',  args=(self.object.id,))
+        return super(ProjectWizardView, self).form_valid(form)
+
 
 
 class ProjectFormView(generic.CreateView):
@@ -275,7 +308,8 @@ class ProjectFormView(generic.CreateView):
             form.save()
         update_url = form.instance.get_update_url()
         form_html = render_crispy_form(form)
-        context = {'success': True, 'update_url': update_url, 'form_html': form_html, 'pk': form.instance.id}
+        context = {'success': True, 'update_url': update_url, 'form_html': form_html, 'pk': form.instance.id,
+                   'success_url': str(reverse_lazy('projects:project-wizard-detail', args=(form.instance.id,)))}
         return context
 
     def form_invalid(self, form):

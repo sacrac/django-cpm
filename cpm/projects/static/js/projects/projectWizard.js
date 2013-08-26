@@ -331,7 +331,7 @@ $('#form-wizard').on('submit', '#project-form', function (event) {
                 $('#step-nav #version-list').parent().removeClass('disabled');
                 if (!(project_id)) {
                     project_id = data['pk'];
-                    window.location = '/cpm/wizard/?project=' + project_id;
+                    window.location = data['success_url'];
                 }
                 project_id = data['pk'];
             }
@@ -540,6 +540,7 @@ $('#form-wizard').on('submit', '#change-form', function (event) {
                 $this.replaceWith(data['form_html']);
                 $this.find('.success-message').show();
                 change_order_id = data.pk;
+                $('#project-title').append('<small>Change Order: ' + data.title + '</small>')
                 showStep(2);
             }
         },
@@ -550,16 +551,17 @@ $('#form-wizard').on('submit', '#change-form', function (event) {
     return false;
 });
 
-$('#form-wizard').on('submit', '#project-image-form', function (event) {
+$('#form-wizard').on('submit', '#project-image-formset', function (event) {
     var $this = $(this);
     var image_form_project = $this.find('#id_project');
     if (image_form_project.val() == "") {
         image_form_project.val(project_id);
     }
     if (update_id) {
-        var image_form_update = $this.find('#id_update');
+        var image_form_update = $this.find('[id$=-update]');
         if (image_form_update.val() == "") {
             image_form_update.val(update_id);
+            console.log('image update id=' + update_id);
         }
     }
 });
@@ -834,7 +836,7 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
                 var compare_url = value.compare_url;
                 var created  = value.created.split('T');
                 var version = value.version;
-                versions.push(version + '"><a href="' + compare_url + '">D: ' + created[0] + ' T: ' + created[1] );
+                versions.push(version + '"><a target="_blank" href="' + compare_url + '">D: ' + created[0] + ' T: ' + created[1] );
             });
 
             versions = '<li id="version-' + versions.join('</a></li><li id="version-');

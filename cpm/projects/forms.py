@@ -84,19 +84,21 @@ class ProjectImageForm(forms.ModelForm):
         super(ProjectImageForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.help_text_inline = True
-        #self.helper.form_tag = False
+        self.helper.form_tag = False
         self.helper.form_id = 'project-image-form'
         self.helper.form_class = 'form-inline'
         #self.helper.form_action = 'projects:project-form'
         self.helper.layout = Layout(
             Div(
+                HTML('<a id="remove-{{ form.prefix }}-row" href="javascript:void(0)" class="delete-row pull-right">delete</a>'),
                 'slug',
                 'project',
                 'update',
                 'change_order',
-                Field('title'),
-                Field('image'),
-                Submit('save_project_image', 'Submit', css_class="btn-primary"),
-                Button('cancel', 'Cancel')
+                'title',
+                'image',
+                css_class='dynamic-form'
+                #Submit('save_project_image', 'Submit', css_class="btn-primary"),
+                #Button('cancel', 'Cancel')
             )
         )

@@ -31,6 +31,13 @@ class Update(DateStamp, Slugged):
     def project_images(self):
         return self.project.project_images.filter(update=self)
 
+    def get_task_choices(self):
+        if self.project:
+            choices = [(task.id, task.title) for task in self.project.task_set.all()]
+        else:
+            choices = []
+        return choices
+
 
 
 class UpdateImage(Slugged):

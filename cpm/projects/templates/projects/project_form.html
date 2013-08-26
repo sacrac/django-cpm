@@ -10,7 +10,9 @@
             <div class="header">
                 <i class="pull-left icon-briefcase colour"></i>
 
-                <h2 id='project-title'>Project Wizard</h2>
+                <h2 id='project-title'>Project Wizard
+                </h2>
+
             </div>
         <div class="row">
 
@@ -176,7 +178,31 @@
                                 New Image added!
                             </p>
                         </div>
+                        {% if project %}
+                            <div id="project_images-__prefix__" class="dynamic-form controls hide">
+                                {{ project_image_formset.empty_form }}
+                            </div>
+                                <form action="" method="post" enctype="multipart/form-data" id="project-image-formset">
+                                    {% csrf_token %}
+
+                                <div class="control-group">
+                                    {% for img_form in project_image_formset %}
+                                        <div id="{{ img_form.prefix }}" class="dynamic-form controls">
+
+                                            {{ img_form }}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="form-actions">
+                                    <input type="submit" name="save_project_image_set" value="Submit" class="btn btn-primary btn-large pull-right">
+                                    <a href="javascript:void(0)" class="add-row btn"><i class="icon-file"></i> New Image...</a>
+                                </div>
+                                    {{ project_image_formset.management_form }}
+                                </form>
+
+                        {% else %}
                         {% crispy project_image_form %}
+                        {% endif %}
 
                     </div>
             </div>
@@ -243,6 +269,7 @@
     <script src="{% static 'js/jquery-ui.js' %}"></script>
     <script src="{% static 'js/bootstrap-collapse.js' %}"></script>
     <script src="{% static 'js/projects/projectWizard.js' %}"></script>
+    <script src="{% static 'js/projects/dynamicForms.js' %}"></script>
 
     <script type="text/javascript">
         var task_form_url = "{% url 'tasks:task-form' %}";
@@ -264,6 +291,32 @@
         });
 
         $('#collapse-step-nav').click();
+
+
+        {% if project %}
+        var project_id = {{ project.id }};
+        getProjectForm('{% url "projects:project-update" project.id %}');
+
+        $('#step-nav a[href="#new-task"]').parent().removeClass('disabled');
+        project_form_url = '/cpm/update/' + project_id + '/';
+
+        getProjectSummary(project_id);
+        $('#step-nav a[href="#new-category"]').parent().removeClass('disabled');
+        $('#step-nav a[href="#new-bundle"]').parent().removeClass('disabled');
+        $('#step-nav a[href="#new-update"]').parent().removeClass('disabled');
+        $('#step-nav a[href="#new-change"]').parent().removeClass('disabled');
+        $('#step-nav a[href="#view-project-page"]').parent().removeClass('disabled');
+        $('#step-nav a[href="#save"]').parent().removeClass('disabled');
+        $('#step-nav a[href="#save-version"]').parent().removeClass('disabled');
+        $('#version-list').parent().removeClass('disabled');
+        $('#view-project-page') .attr('href', '/cpm/projects/' + project_id + '/');
+        // Have to replace the OG form, therwise 2 csrf tokens are sent
+        getProjectForm(project_form_url);
+        getTaskForm(task_form_url);
+        getTaskCategoryForm(category_form_url);
+        getBundleChoices();
+        {% endif %}
+
 
 
         {% comment %}

@@ -4,10 +4,11 @@ except ImportError:  # django < 1.4
     from django.conf.urls.defaults import *
 
 from .views import ProjectWizardView, ProjectFormView, ProjectUpdateView, ProjectDeleteView, ProjectDetailView, \
-    ProjectDetailJSONView, ProjectListView, ProjectRedirectView, set_task_order, project_list_super, project_images, project_proposal, VersionDetailView, version_diff, VersionDetailJSONView, version_compare
+    ProjectDetailJSONView, ProjectListView, ProjectRedirectView, set_task_order, project_list_super, project_images, project_proposal, VersionDetailView, version_diff, VersionDetailJSONView, version_compare, ProjectWizardDetailView
 
 urlpatterns = patterns('projects',
                        url(r'^wizard/$', ProjectWizardView.as_view(), name='project-wizard'),
+                       url(r'^wizard/(?P<pk>\d+)/$', ProjectWizardDetailView.as_view(), name='project-wizard-detail'),
                        url(r'^create/$', ProjectFormView.as_view(), name='project-form'),
                        #url(r'^manage/(?P<project_id>\d+)/$', manage_projects, name='project-manager'),
                        url(r'^update/(?P<pk>\d+)/$', ProjectUpdateView.as_view(), name='project-update'),
