@@ -19,14 +19,13 @@ class Note(DateStamp):
     class Meta:
         permissions = (
             ("view_note", "Can view note"),
-            ("edit_note", "Can edit note"),
         )
 
 class Company(Slugged):
     pass
 
 class Client(models.Model):
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, related_name='client_profile')
     phone = models.IntegerField(null=True)
     c_phone = models.IntegerField(null=True)
     w_phone = models.IntegerField(null=True)

@@ -26,6 +26,11 @@ class Project(DateStamp, Slugged):
 
     #blueprints
     #drawings
+    class Meta:
+        permissions = (
+            ("view_project", "Can view project"),
+            ("edit_project", "Can edit project"),
+        )
 
     def get_absolute_url(self):
         return reverse('projects:project-detail', kwargs={'pk': self.pk})

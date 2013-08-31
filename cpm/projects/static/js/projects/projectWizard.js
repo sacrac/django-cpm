@@ -842,8 +842,8 @@ function getProjectSummary(project_id, catsToo, tasksToo) {
             versions = '<li id="version-' + versions.join('</a></li><li id="version-');
             $('#version-list').html(versions);
             $('#project-summary-fields').html(
-                '<a class="toggle-table pull-right" data-target="#"><i class="icon-collapse-alt"></i></a>'
-                    + '<div class="collapse in">'
+                '<a class="toggle-table pull-right" data-target="#"><i class="icon-expand-alt"></i></a>'
+                    + '<div class="collapse">'
                     + '<h4>'+ data.title + '</h4>'
                     + '<h5>' + data.username + '</h5>'
                     + '<ul class="unstyled">'
