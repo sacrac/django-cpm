@@ -32,11 +32,24 @@
 {% endblock extra_css %}
 
 
+
+
+
 {% block sub_menu %}{{ block.super }}
-    <li class="active"><a href="#updates" data-toggle="tab"><i class="icon-ok-circle"></i></a></li>
-    <li><a href="#tasks" data-toggle="tab"><i class="icon-tasks"></i></a></li>
-    <li><a href="#change-orders" data-toggle="tab"><i class="icon-edit"></i></a></li>
-    <li><a href="#galleries" data-toggle="tab"><i class="icon-picture"></i></a></li>
+    {% with project.update_set.all as update_set %}
+        {% if update_set %}
+        <li class="active"><a href="#updates" data-toggle="tab"><i class="icon-ok-circle"></i></a></li>
+        <li><a href="#tasks" data-toggle="tab"><i class="icon-tasks"></i></a></li>
+        {% else %}
+        <li class="active"><a href="#tasks" data-toggle="tab"><i class="icon-tasks"></i></a></li>
+        {% endif %}
+        {% if project.changeorder_set.all %}
+        <li><a href="#change-orders" data-toggle="tab"><i class="icon-edit"></i></a></li>
+        {% endif %}
+        {% if project.project_images.all %}
+        <li><a href="#galleries" data-toggle="tab"><i class="icon-picture"></i></a></li>
+        {% endif %}
+    {% endwith %}
 {% endblock sub_menu %}
 
 {% block title %}
@@ -55,11 +68,11 @@
 
 
 {% block content %}
-
-
     <div class="wpl-widget">
 
     <div class="tab-content">
+    {% with project.update_set.all as update_set %}
+        {% if update_set %}
     <div id="updates" class="tab-pane active">
         <div class="updates">
 
@@ -72,7 +85,7 @@
                 <div class="tabbable">
                     <div class="span2 tabs-left">
                         <ul class="nav nav-tabs">
-                            {% for update in project.update_set.all|dictsortreversed:"created" %}
+                            {% for update in update_set|dictsortreversed:"created" %}
                                 <li {% if forloop.first %}class="active"{% endif %}>
                                     <a href="#tab-content-{{ update.slug }}"
                                        data-toggle="tab">{{ update.created|date:"N d" }}</a></li>
@@ -91,7 +104,7 @@
                                         </a>
                                     </h3>
 
-                                    <p>{{ update.description }} {% lorem 2 p %}</p>
+                                    <p>{{ update.description }}</p>
                                 </div>
 
                                 <div class="span6">
@@ -116,7 +129,7 @@
 
                                     {% if update.tasks.all %}
                                 <h3>
-                                    Tasks Completed This Update:
+                                    Here is what was worked on:
                                 </h3>
 
                                 <dl>
@@ -125,26 +138,7 @@
                                                 {{ task.title|title }}
                                             </dt>
                                             <dd>
-                                                <dl class="dl-horizontal">
-                                                    <dt>
-                                                        Category:
-                                                    </dt>
-                                                    <dd>
-                                                    {{ task.category.title|title }}
-                                                    </dd>
-                                                    <dt>
-                                                        Description:
-                                                    </dt>
-                                                    <dd>
                                                         {{ task.description }}
-                                                    </dd>
-                                                    <dt>
-                                                        Date:
-                                                    </dt>
-                                                    <dd>
-                                                        {{ task.completion_date|date:"N d" }}
-                                                    </dd>
-                                                </dl>
                                             </dd>
                                         {% endfor %}
                                 </dl>
@@ -160,14 +154,26 @@
     </div>
 
     <div id="tasks" class="tab-pane">
+        {% else %}
+
+    <div id="tasks" class="tab-pane active">
+
+        {% endif %}
+    {% endwith %}
+
 
         <div class="tasks">
             <div class="well">
 
             <div class="header">
                 <h2>
-                    Tasks
+                    Proposal for {{ project.user.get_full_name }} <small class="pull-right">Prepaired {{ project.created|date:"N d, y" }}</small>
                 </h2>
+            </div>
+            <div class="content">
+            <p class="lead">
+                {{ project.description|safe }}
+            </p>
             </div>
                 <div id="task-list"></div>
 
@@ -240,7 +246,7 @@
                                         </a>
                                     </h3>
 
-                                    <p>{{ changeorder.description }} {% lorem 2 p %}</p>
+                                    <p>{{ changeorder.description }}</p>
                                 </div>
 
                                 <div class="span6">
@@ -336,15 +342,31 @@
             var cat_total = '<div class="footer"><table class="table"><tr><td class="span5">'
                     + cat_total_list.join('</th><th class="span2">$ ')
                     + '</th></tr></table></div>';
-        {% else %}
+        {% elif project.view_cat_totals %}
             var table_head = '<thead><tr><th class="span4">Task</th>'
                             + '<th class="span8">Description</th>'
                             + '</tr></thead>'
             ;
+            if (node.total == 0) {
+                var cat_total_list =  [];
+                var cat_total = '';
+            }
+            else {
             var cat_total_list =  [node.title + ' Total',  node['total']];
             var cat_total = '<div class="footer"><table class="table"><tr><td class="span9">'
                     + cat_total_list.join('</th><th class="span3">$ ')
                     + '</th></tr></table></div>';
+            }
+
+
+
+        {% else %}
+            var table_head = '<thead><tr><th class="span4">Task</th>'
+                            + '<th class="span8">Description</th>'
+                            + '</tr></thead>'
+                    ;
+            var cat_total_list =  [];
+            var cat_total = '';
         {% endif %}
 
 
@@ -353,7 +375,8 @@
             var task_list = node.task_set;
             $.each(task_list, function (key, value) {
                 {% if user.is_staff %}
-                    var pre_list= [value['title'], '$ ' + value['expense'], '$ ' + value['price']];
+                    var pre_list;
+                    pre_list= [value['title'], '$ ' + value['expense'], '$ ' + value['price']];
                 {% else %}
                     var pre_list= [value['title'], value['description']];
                 {% endif %}

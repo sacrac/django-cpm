@@ -23,7 +23,6 @@ def signup(request):
     return render(request, 'accounts/signup.html', {'form': form})
 
 
-
 @login_required
 def profile(request, id):
     lookup = {"id__iexact": id, "is_active": True}

@@ -190,6 +190,7 @@ class ProjectDetailView(generic.DetailView):
     model = Project
 
 
+
 def project_list_super(request, user=None, year=None, month=None):
     user_list = User.objects.filter(is_staff=False)
     project_select_form = ProjectFilterForm()
@@ -225,8 +226,19 @@ class ProjectListView(generic.ListView):
         self.queryset = super(ProjectListView, self).get_queryset()
         #TODO: I think this is redundant remove if there arent any errors
         #self.user = get_object_or_404(User, id=self.args[0])
-        context = {
-            'client': self.user
+
+        updates_exist = False
+        for project in self.get_queryset():
+            if project.update_set.exists():
+                updates_exist = True
+        changeorders_exist = False
+        for project in self.get_queryset():
+            if project.changeorder_set.exists():
+                changeorders_exist = True
+
+        context = {'client': self.user,
+                   'updates_exist': updates_exist,
+                   'changes_exist': changeorders_exist,
         }
         context.update(kwargs)
         return super(ProjectListView, self).get_context_data(**context)

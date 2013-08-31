@@ -1,14 +1,10 @@
 {% extends "base.html" %}
 {% load webdesign staticfiles cpm_tags %}
 
-{% block title %}Projects{% endblock %}
+{% block title %}<i class="icon-dashboard"></i> Dashboard{% endblock %}
 
 
 {% block content %}
-    {% if user == client or user.is_superuser %}
-
-
-
         <div class="row">
         <div class="span4">
             <ul class="thumbnails user-profile">
@@ -43,7 +39,15 @@
                     </div>
                     <div class="animated bounceInRight">
 
+                        {% if user.message_set.exists %}
                         {% include 'messages/message_widget.html' %}
+                        {% else %}
+                        <div class="content">
+                            <p>
+                                Your messages will appear here.
+                            </p>
+                        </div>
+                        {% endif %}
 
                     </div>
 
@@ -73,7 +77,6 @@
 
         </div>
     </div>
-    {% endif %}
 
 
     <div class="wpl-widget projects">
@@ -83,9 +86,11 @@
                 <h2>Projects</h2>
             </div>
 
+            {% if project_list.exists %}
             <table class="table">
                 <thead></thead>
                 <tbody>
+
                 {% for project in project_list %}
                     <tr>
                         <td class="span5">
@@ -113,6 +118,14 @@
                 {% endfor %}
                 </tbody>
             </table>
+            {% else %}
+                <div class="content">
+                    <p>
+                        Your projects will appear here.
+                    </p>
+                </div>
+            {% endif %}
+
 
         </div>
     </div>
@@ -120,7 +133,6 @@
 
     <div class="row">
 
-        {% if user == client or user.is_superuser %}
         <div class="wpl-widget updates">
             <div class="span6">
                 <div class="well pad-0">
@@ -136,6 +148,7 @@
                     <div id="updates-next" class="widget-scroll-next3"><i class="icon-chevron-right white but_marg"></i></div>
                     <div id="updates-prev" class="widget-scroll-prev3"><i class="icon-chevron-left white"></i></div>
                 </div>
+                    {% if updates_exist %}
                     <div class="caroufredsel_wrapper">
                         <div id="updates-carousel">
                             <!-- Carousel items -->
@@ -156,7 +169,6 @@
 
                                         <div class="clearfix"></div>
                                                 <p>
-                                                    {% lorem 1 p %}
                                                     {{ update.description }}
                                                 </p>
 
@@ -194,6 +206,13 @@
                         </div>
 
                     </div>
+                    {% else %}
+                        <div class="content">
+                            <p>
+                                Your updates will appear here.
+                            </p>
+                        </div>
+                    {% endif %}
 
                 </div>
             </div>
@@ -216,6 +235,7 @@
                         <div id="change-orders-prev" class="widget-scroll-prev3"><i class="icon-chevron-left white"></i></div>
                     </div>
 
+                    {% if changes_exist %}
                     <div class="caroufredsel_wrapper">
                         <div id="change-orders-carousel">
                             <!-- Carousel items -->
@@ -255,7 +275,7 @@
                                         {% elif co.approved == False %}
                                         <h6 class="pull-right">Revision in progress</h6>
                                         {% else %}
-                                        <h6 class="pull-right">You approved this {{ co.modified|date:"N d" }}</h6>
+                                        <h6 class="pull-right">Approved {{ co.modified|date:"N d" }}</h6>
 
                                     {% endif %}
 
@@ -274,7 +294,6 @@
                                         <div class="clearfix">
 
                                             <p>
-                                                {% lorem 1 p %}
                                                 {{ co.description }}
                                             </p>
 
@@ -296,9 +315,15 @@
                         </div>
 
                     </div>
+        {% else %}
+            <div class="content">
+                <p>
+                    Your change orders will appear here.
+                </p>
+            </div>
+        {% endif %}
 
 
-                {% endif %}
 
 
                 </div>
@@ -396,6 +421,7 @@
 {% endblock extra_js %}
 
 {% block extra_css %}
+    <link rel="stylesheet/css" href="{% static 'css/bootstrap-responsive.min.css' %}">
     <style>
     .wpl-widget.messages input {
         line-height: 23px;

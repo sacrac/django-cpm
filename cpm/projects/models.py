@@ -121,6 +121,9 @@ class ProjectImage(Slugged):
     update = models.ForeignKey('updates.Update', related_name="project_images", null=True, blank=True)
     change_order = models.ForeignKey('changes.ChangeOrder', related_name="project_images", null=True, blank=True)
     image = models.ImageField(max_length=200, upload_to='projects', width_field='width', height_field='height')
+    width = models.IntegerField(max_length=255, blank=True, null=True)
+    height = models.IntegerField(max_length=255, blank=True, null=True)
+    #approved = models.NullBooleanField()
 
     class Meta:
         verbose_name = _("Project Image")
