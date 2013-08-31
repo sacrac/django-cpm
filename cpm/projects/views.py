@@ -35,6 +35,8 @@ from .models import Project, ProjectImage
 from .helpers import get_used_branch_ids, create_used_item_list, modify_used_item_list, create_used_item_tree, sort_tree
 
 
+
+
 def get_dict_in_list_2(key, key0, value, value0, dict_list):
     """
     looks through a list of dictionaries and returns dict, where dict[key] == value
@@ -263,6 +265,7 @@ class ProjectWizardView(generic.FormView):
         return super(ProjectWizardView, self).form_valid(form)
 
 
+#TODO: TOGGLE CATEGORY TOTALS
 class ProjectWizardDetailView(ProjectWizardView, SingleObjectMixin):
     model = Project
     formset_class = inlineformset_factory(Project, ProjectImage, form=ProjectImageForm, can_delete=False, extra=1)
@@ -278,8 +281,14 @@ class ProjectWizardDetailView(ProjectWizardView, SingleObjectMixin):
         context.update(kwargs)
         return context
 
+
+
+
     def post(self, request, *args, **kwargs):
         self.object = super(ProjectWizardDetailView, self).get_object()
+        if 'id' in request.POST:
+            print request.POST
+
         if "save_project_image_set" in request.POST:
             formset = self.formset_class(request.POST, request.FILES, instance=self.object)
             if formset.is_valid():

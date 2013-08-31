@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load staticfiles crispy_forms_tags webdesign %}
+{% load staticfiles crispy_forms_tags webdesign cpm_tags %}
 
 {% block extra_css %}
     <link rel='stylesheet' href="{% static 'css/font-awesome.min.css' %}">
@@ -101,7 +101,7 @@
                                     {% for img in update.project_images.all %}
 
                                     {% if forloop.first %}
-                                    <img class="thumbnail" src="{{ img.image.url }}">
+                                    <img class="thumbnail" src="{{ MEDIA_URL }}{% thumbnail img.image.url 450 0 %}">
                                     <div class="row">
                                         {% else %}
                                         <div class="span1">
@@ -111,29 +111,6 @@
                                     {% endfor %}
                                     </div>
 
-                                {% else %}
-                                    <img class="thumbnail" src="holder.js/450x300/gray">
-
-                                    <div class="row">
-                                        <div class="span1">
-                                            <img class="thumbnail" src="holder.js/50x50/gray">
-                                        </div>
-                                        <div class="span1">
-                                            <img class="thumbnail" src="holder.js/50x50/gray">
-                                        </div>
-                                        <div class="span1">
-                                            <img class="thumbnail" src="holder.js/50x50/gray">
-                                        </div>
-                                        <div class="span1">
-                                            <img class="thumbnail" src="holder.js/50x50/gray">
-                                        </div>
-                                        <div class="span1">
-                                            <img class="thumbnail" src="holder.js/50x50/gray">
-                                        </div>
-                                        <div class="span1">
-                                            <img class="thumbnail" src="holder.js/50x50/gray">
-                                        </div>
-                                    </div>
                                 {% endif %}
 
 

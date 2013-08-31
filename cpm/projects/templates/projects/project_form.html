@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags staticfiles %}
 
-
-
 {% block content %}
 
 
@@ -190,6 +188,7 @@
                                         <div id="{{ img_form.prefix }}" class="dynamic-form controls">
 
                                             {{ img_form }}
+                                        {{ forloop.counter.as_hidden }}
                                         </div>
                                     {% endfor %}
                                 </div>

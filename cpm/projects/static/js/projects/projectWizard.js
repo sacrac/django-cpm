@@ -702,7 +702,7 @@ function deleteWizardItem(deleteUrl, form_id, form_url) {
     $.ajax({
         url: deleteUrl,
         type: 'POST',
-        data: 'csrfmiddlewaretoken=' + getCookie('csrftoken'),
+        data: 'csrfmiddlewaretoken=' + getCookie('csrftoken') + '&test=1',
         success: function(data) {
             if (data['success']){
 

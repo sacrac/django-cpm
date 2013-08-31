@@ -1,13 +1,15 @@
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.contrib.auth.models import User
+from core.models import DateStamp
 
 
-class Message(models.Model):
+class Message(DateStamp):
     user = models.ForeignKey(User)
     recipient = models.ForeignKey(User, related_name='received_messages')
+    #TODO: CHANGE THIS ^ TO THIS v
+    #user = models.ForeignKey(User, related_name='recipient'))
     message = models.TextField()
-    created = models.DateField(auto_now_add=True)
 
     def __unicode__(self):
         return str(self.created)

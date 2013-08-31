@@ -235,6 +235,15 @@ class TaskDeleteView(generic.DeleteView):
         self.object.delete()
         return {'success':True}
 
+    def post(self, request, *args, **kwargs):
+        if request.POST.has_key('test'):
+            print 'TEST:  ' + request.POST['test']
+        else:
+            print 'TEST:  FAIL'
+        return self.delete(self, request, *args, **kwargs)
+
+
+
 
 class TaskCategoryListView(generic.ListView):
     model = TaskCategory

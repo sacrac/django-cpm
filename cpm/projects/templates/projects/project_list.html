@@ -11,30 +11,27 @@
 
         <div class="row">
         <div class="span4">
-            <h4><span>Welcome Back, {{ user.username }}</span></h4>
+            <h4><span>Hello, {{ user.username }}</span></h4>
             <ul class="thumbnails user-profile">
-                <li class="span1">
-                    <div class="animated bounceInLeft">
-                        <div class="pad15"></div>
-                        <img class="img-rounded" src="holder.js/60x60/social">
-                        <small><a href="#" class="edit">Edit Profile</a></small>
-                    </div>
-                </li>
-                <li class="span3">
+                <li class="span4">
                     <!-- User Account Info -->
                     <table class="table table-condensed">
                         <thead>
                         <tr>
-                            <th>{{ user.get_full_name }}User Name</th>
+                            <th>{{ user.get_full_name }}</th>
                         </tr>
                         </thead>
                         <tbody>
+                        {% if user.client.company %}
                         <tr>
-                            <td>{{ user.company.title }}Company Title</td>
+                            <td>{{ user.company }}</td>
                         </tr>
+                        {% endif %}
+                        {% if user.client.phone %}
                         <tr>
-                            <td>{{ user.phone }}555.555.5555</td>
+                            <td>{{ user.client.phone }}</td>
                         </tr>
+                        {% endif %}
                         <tr>
                             <td>{{ user.email }}</td>
                         </tr>
@@ -177,34 +174,15 @@
 
 
                                         <div class="row">
-                                            {% if update.update_images.all %}
+                                            {% if update.project_images.all %}
 
-                                                {% for img in update.update_images.all %}
+                                            {% for img in update.project_images.all %}
+
                                                     <div class="span1">
                                                         <img class="thumbnail" src="{{ img.image.url }}">
                                                     </div>
                                                 {% endfor %}
 
-                                            {% else %}
-
-                                                <div class="span1">
-                                                    <img class="thumbnail" src="holder.js/50x50/gray">
-                                                </div>
-                                                <div class="span1">
-                                                    <img class="thumbnail" src="holder.js/50x50/gray">
-                                                </div>
-                                                <div class="span1">
-                                                    <img class="thumbnail" src="holder.js/50x50/gray">
-                                                </div>
-                                                <div class="span1">
-                                                    <img class="thumbnail" src="holder.js/50x50/gray">
-                                                </div>
-                                                <div class="span1">
-                                                    <img class="thumbnail" src="holder.js/50x50/gray">
-                                                </div>
-                                                <div class="span1">
-                                                    <img class="thumbnail" src="holder.js/50x50/gray">
-                                                </div>
                                             {% endif %}
                                     </div>
 

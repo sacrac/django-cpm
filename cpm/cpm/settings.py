@@ -1,3 +1,5 @@
+THUMBNAILS_DIR_NAME = '.thumbnails'
+UPLOAD_TO_HANDLERS = {}
 # Django settings for cpm project.
 
 DEBUG = True

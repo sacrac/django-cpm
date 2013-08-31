@@ -11,8 +11,7 @@ from urllib import unquote
 import reversion
 from reversion.models import Revision
 
-from core.utils import import_dotted_path
-from core.models import Slugged, base_concrete_model, DateStamp
+from core.models import Slugged, DateStamp
 
 
 
@@ -22,6 +21,8 @@ class Project(DateStamp, Slugged):
     completion = models.IntegerField(default=0)
     start_time = models.DateField(blank=True, null=True)
     bundles = models.ManyToManyField('tasks.CategoryBundle', blank=True, null=True)
+    view_cat_totals = models.BooleanField(default=1)
+    location = models.CommaSeparatedIntegerField(max_length=1000, null=True, blank=True)
 
     #blueprints
     #drawings
@@ -119,7 +120,7 @@ class ProjectImage(Slugged):
     project = models.ForeignKey(Project, related_name="project_images")
     update = models.ForeignKey('updates.Update', related_name="project_images", null=True, blank=True)
     change_order = models.ForeignKey('changes.ChangeOrder', related_name="project_images", null=True, blank=True)
-    image = models.ImageField(max_length=200, upload_to='projects')
+    image = models.ImageField(max_length=200, upload_to='projects', width_field='width', height_field='height')
 
     class Meta:
         verbose_name = _("Project Image")

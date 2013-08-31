@@ -11,7 +11,7 @@ from .models import Project, ProjectImage
 class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
-        fields = ['user', 'title', 'slug', 'description', 'start_time', 'completion']
+        fields = ['user', 'title', 'slug', 'description', 'start_time', 'completion', 'view_cat_totals']
         #, 'bundles']
         widgets = {
             'slug': forms.HiddenInput(),
@@ -36,6 +36,7 @@ class ProjectForm(forms.ModelForm):
                     Field('user'),
                     Field('title'),
                     Field('start_time'),
+                    Field('view_cat_totals'),
                 ),
                 Div(
                     Field('description'),

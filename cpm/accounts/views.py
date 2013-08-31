@@ -1,10 +1,12 @@
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.messages import info, error
 from django.contrib.auth.decorators import login_required
 from django.views import generic
+
+from .forms import UserCreationForm
 
 
 def signup(request):
@@ -19,6 +21,7 @@ def signup(request):
                 login(request, user)
                 return redirect(request.GET.get("next"))
     return render(request, 'accounts/signup.html', {'form': form})
+
 
 
 @login_required

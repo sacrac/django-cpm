@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<form method="post" action="?next={% url 'projects:project-redirect' %}">{% csrf_token %}
+<form method="post">{% csrf_token %}
 {% crispy form %}
 <input type="submit" value="Submit" />
 </form>
