@@ -33,6 +33,7 @@ class Client(models.Model):
     company = models.ForeignKey(Company, blank=True, null=True, related_name='employees')
     title = models.CharField(max_length=255, blank=True)
     location = models.CommaSeparatedIntegerField(max_length=1000, null=True, blank=True)
+    address = models.CharField(max_length=255, blank=True)
     ip_addresses = models.ManyToManyField(IPAddress, blank=True, null=True)
 
 
