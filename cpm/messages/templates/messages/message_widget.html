@@ -57,10 +57,10 @@
                 console.log(field.user);
                 console.log(field.user == userName);
                 if((field.user) == userName){
-                    $('#messages-widget').prepend('<li class="right media" id="sent-' + field.created + '-' + sentCount + '"><div class="media-body"><h5><span class="colour">@</span><span>' + field.recipient + '</span> <em>' + field.created + '</em></h5><p>' + field.message + '</p></div></li>');
+                    $('#messages-widget').prepend('<li class="right media" id="sent-' + field.created + '-' + sentCount + '"><div class="media-body"><h5><span class="colour">@</span><span>' + field.user + '</span> <em>' + field.created + '</em></h5><p>' + field.message + '</p></div></li>');
                     sentCount += 1;
                 } else {
-                    $('#messages-widget').prepend('<li class="left media" id="recieved-' + field.created + '-' + recievedCount + '"><div class="media-body"><h5><span class="colour">@</span><span>' + field.recipient + '</span> <em>' + field.created + '</em></h5><p>' + field.message + '</p></div></li>');
+                    $('#messages-widget').prepend('<li class="left media" id="recieved-' + field.created + '-' + recievedCount + '"><div class="media-body"><h5><span class="colour">@</span><span>' + field.user + '</span> <em>' + field.created + '</em></h5><p>' + field.message + '</p></div></li>');
                     recievedCount +=1;
                 }
 
@@ -115,6 +115,7 @@
                     $('#messages-widget').prepend('<li class="right media" id="sent-' + messageTime + '-' + sentCount + '"><div class="media-body"><h5><span class="colour">@</span><span>admin</span> <em>' + messageTime + '</em></h5><p>' + message + '</p></div></li>');
                     sentCount += 1;
                     $('input#id_message').val('');
+                    $('#no-messages-message').hide();
                     // clears input after submitting
                 }
             });

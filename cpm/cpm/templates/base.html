@@ -28,6 +28,12 @@
     .navbar-inner {
         min-height: 40px;
     }
+    .navbar .brand {
+        padding: 5px 20px;
+    }
+   .navbar .brand img {
+       max-height: 30px;
+   }
 </style>
 {% block extra_css %}{% endblock extra_css %}
 
@@ -48,8 +54,11 @@
 <nav>
 <div class="navbar">
 <div class="navbar-inner">
+<a class="brand" href="/">
+    <img src="{% static "img/danmar_logo.png" %}">
+</a>
 <div class="container">
-<ul class="nav">
+<ul class="nav pull-right">
     {% if user.is_authenticated %}
         <li class="dropdown"><a href="#" data-toggle="dropdown">Projects</a>
             <ul class="dropdown-menu">
@@ -72,7 +81,6 @@
             {% endif %}
         <li class="dropdown"><a href="#" data-toggle="dropdown">Account</a>
             <ul class="dropdown-menu">
-                <li><a href="{% url 'accounts:profile' user.username %}">{{ user.username }}</a></li>
                 <li><a href="{% url 'logout' %}">Logout</a></li>
         </ul>
     {% else %}

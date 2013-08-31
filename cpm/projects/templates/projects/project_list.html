@@ -39,10 +39,9 @@
                     </div>
                     <div class="animated bounceInRight">
 
-                        {% if user.message_set.exists %}
                         {% include 'messages/message_widget.html' %}
-                        {% else %}
-                        <div class="content">
+                        {% if not user.message_set.exists %}
+                        <div class="content" id="no-messages-message">
                             <p>
                                 Your messages will appear here.
                             </p>
@@ -50,29 +49,31 @@
                         {% endif %}
 
                     </div>
+                <div class="content">
+                    <form action="{% url 'messages:message-form' %}" method="post" class="animated fadeInUp"
+                          id="message-form">
+                        <div class="controls">
+                            <div class="input-prepend input-append">
+                                <span class="add-on info"><i class="icon-envelope"></i></span>
+                                <input class="span7" id="id_message" name="message" placeholder="New message..">
+                                <button type="submit" id="submit" class="btn btn-primary"><i class="icon-share-alt"></i></button>
+                            </div>
+                        </div>
+                        {% if user.is_superuser %}
+                            <!--
+                            <button class="btn-info btn" id="refresh-messages" onclick="getMessages()">
+                                <i class="icon icon-refresh"></i>
+                            </button>
+                            -->
+                            <input id="id_recipient" name="recipient" value="1" type="hidden">
+                        {% else %}
+                            <input id="id_recipient" name="recipient" value="1" type="hidden">
+                        {% endif %}
+                    </form>
+                </div>
 
                 </div>
 
-                <form action="{% url 'messages:message-form' %}" method="post" class="animated fadeInUp"
-                      id="message-form">
-                <div class="controls">
-                    <div class="input-prepend input-append">
-                        <span class="add-on info"><i class="icon-envelope"></i></span>
-                        <input class="span7" id="id_message" name="message" placeholder="New message..">
-                        <button type="submit" id="submit" class="btn btn-primary"><i class="icon-share-alt"></i></button>
-                    </div>
-                </div>
-                    {% if user.is_superuser %}
-                        <!--
-                        <button class="btn-info btn" id="refresh-messages" onclick="getMessages()">
-                            <i class="icon icon-refresh"></i>
-                        </button>
-                        -->
-                        <input id="id_recipient" name="recipient" value="1" type="hidden">
-                    {% else %}
-                        <input id="id_recipient" name="recipient" value="1" type="hidden">
-                    {% endif %}
-                </form>
             </div>
 
         </div>
@@ -423,6 +424,9 @@
 {% block extra_css %}
     <link rel="stylesheet/css" href="{% static 'css/bootstrap-responsive.min.css' %}">
     <style>
+    .wpl-widget.messages form {
+        margin: 0;
+    }
     .wpl-widget.messages input {
         line-height: 23px;
     }
